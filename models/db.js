@@ -10,7 +10,7 @@ let mongoose = require("mongoose")
 let constants = require("../constants.js")
 
 let host_and_port_and_db = `${constants.MONGO_HOST}:${constants.MONGO_PORT}/${constants.MONGO_DB}`
-let url;
+let url
 if (constants.MONGO_USER !== "") {
   url = `mongodb://${constants.MONGO_USER}:${constants.MONGO_PASSWD}@${host_and_port_and_db}`
 }else {
@@ -25,6 +25,9 @@ mongoose.connect(url, (error) => {
   console.log(`Connect to mongodb(${host_and_port_and_db}) successfully!`)
 })
 
-exports.mongoose = mongoose
+// config to native promise. http://mongoosejs.com/docs/promises.html
+mongoose.Promise = global.Promise
+
+module.exports = mongoose
 
 /* db.js ends here */
