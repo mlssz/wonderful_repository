@@ -22,13 +22,27 @@ let repoSchema = Schema({
   }),
   available_space: {
     type: Number,
-    default: 0,
+    default: 3960,
     min: 0
   },
   stored_count: utils.Integer({
     default: 0,
     min: 0
   }),
+  volume_location: [{
+    volume: {
+      type: Number,
+      required: "{PATH} is required!",
+      min: 0
+    },
+    location: utils.IntRequired({
+      min: 1
+    }),
+    count: utils.Integer({
+      min: 0,
+      default: 1
+    })
+  }],
   locations: [{
     id: utils.IntRequired({
       min: 1
@@ -40,14 +54,10 @@ let repoSchema = Schema({
     place: utils.IntRequired({
       min: 1
     }),
-    avalibale_height: {
+    avalibale_space: {
       type: Number,
-      default: 2,
+      default: 90,
       min: 0
-    },
-    is_top_full: {
-      type: Boolean,
-      default: false
     },
     materials: [Schema.Types.ObjectId]
   }]
