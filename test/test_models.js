@@ -29,10 +29,6 @@ describe("Repository", () => {
         id: 2,
         available_space: 3,
         stored_count: 2,
-        volume_location: [{
-          volume: 2.3,
-          location: 2,
-        }],
         locations: [{
           id: 1,
           label: "3",

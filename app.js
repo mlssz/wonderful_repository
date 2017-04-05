@@ -1,12 +1,10 @@
 let express = require("express")
 let path = require("path")
 let favicon = require("serve-favicon")
+let fs = require("fs")
 let logger = require("morgan")
 let cookieParser = require("cookie-parser")
 let bodyParser = require("body-parser")
-
-let index = require("./routes/index")
-let users = require("./routes/users")
 
 let app = express()
 
@@ -22,8 +20,25 @@ app.use(bodyParser.urlencoded({ extended: false }))
 app.use(cookieParser())
 app.use(express.static(path.join(__dirname, "public")))
 
-app.use("/", index)
-app.use("/users", users)
+// import and use routes
+let routes_path = path.join(__dirname, "./routes")
+let routes = fs.readdirSync(routes_path)
+routes = routes
+  .filter((r) => r.split(".").pop() === "js")
+  .map((r) => {
+    try{
+      let item = require(path.join(routes_path, r))
+      return [item.path.split("/").length, item]
+    }catch(err){
+      console.error(err)
+      return null
+    }
+  })
+  .filter(r => r !== null).sort()
+  .map((r) => r[1])
+routes.forEach((r) => {
+  app.use(r.path, r.router)
+})
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => {

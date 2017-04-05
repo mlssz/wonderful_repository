@@ -3,7 +3,6 @@ let router = express.Router()
 exports.router = router
 exports.path = "/"
 
-/* GET home page. */
 router.head("/", (req, res, next) => {
   let result = req.query["value"] || "none"
   res.status(200).json({"value": result})
