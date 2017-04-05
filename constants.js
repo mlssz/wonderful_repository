@@ -52,24 +52,19 @@ if (ENV === TEST_ENV) {
 // flowing is mongodb configuration
 
 // MONGO_HOST is the host of mongodb
-exports.MONGO_HOST = config.mongo === undefined ? DEFAULT_MONGO_HOST :
-  config.mongo.host === undefined ? DEFAULT_MONGO_HOST : config.mongo.host
+exports.MONGO_HOST = config.mongo && config.mongo.host || DEFAULT_MONGO_HOST
 
 // MONGO_PORT is the port of mongodb
-exports.MONGO_PORT = config.mongo === undefined ? DEFAULT_MONGO_PORT :
-  config.mongo.port === undefined ? DEFAULT_MONGO_PORT : config.mongo.port
+exports.MONGO_PORT = config.mongo && config.mongo.port || DEFAULT_MONGO_PORT
 
 // MONGO_USER is the user of mongodb
-exports.MONGO_USER = config.mongo === undefined ? DEFAULT_MONGO_USER :
-  config.mongo.user === undefined ? DEFAULT_MONGO_USER : config.mongo.user
+exports.MONGO_USER = config.mongo && config.mongo.user || DEFAULT_MONGO_USER
 
 // MONGO_PASSWD is the passwd of mongodb
-exports.MONGO_PASSWD = config.mongo === undefined ? DEFAULT_MONGO_PASSWD :
-  config.mongo.passwd === undefined ? DEFAULT_MONGO_PASSWD : config.mongo.passwd
+exports.MONGO_PASSWD = config.mongo && config.mongo.passwd || DEFAULT_MONGO_PASSWD
 
 // MONGO_DB is the db of mongodb
-exports.MONGO_DB = config.mongo === undefined ? DEFAULT_MONGO_DB :
-  config.mongo.db === undefined ? DEFAULT_MONGO_DB : config.mongo.db
+exports.MONGO_DB = config.mongo && config.mongo.db || DEFAULT_MONGO_DB
 
 // flowing is configuration of business
 
