@@ -173,6 +173,7 @@ describe("Migration", () => {
     it("should create doc successfully by create method", () => {
       return Migration.create({
         material: mid,
+        date: Date.now(),
         from_repository: 2,
         from_location: 3,
         to_repository: 4,

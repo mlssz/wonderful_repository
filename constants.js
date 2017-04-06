@@ -70,8 +70,6 @@ exports.MONGO_DB = config.mongo && config.mongo.db || DEFAULT_MONGO_DB
 
 // REPO_WIDTH is the width of each repository (meter)
 exports.REPO_WIDTH  = 30
-// REPO_HEIGHT is the height of each repository (meter)
-exports.REPO_HEIGHT = 2
 // REPO_LENGTH is the length of each repository (meter)
 exports.REPO_LENGTH = 80
 
@@ -79,9 +77,12 @@ exports.REPO_LENGTH = 80
 exports.LOCATION_WIDTH  = 3
 // LOCATION_LENGTH is the length of each location (meter)
 exports.LOCATION_LENGTH = 10
-// LOCATION_HEIGHT is the height of each location (meter)
-exports.LOCATION_HEIGHT = exports.REPO_HEIGHT
 // LOCATION_NUM is the number of locations in repository
 exports.LOCATION_NUM    = 44
+
+// LOCATION_COLUMN is the number of column which material put as
+exports.LOCATION_COLUMN = 2
+// LOCATION_LENGTH is the height of materials stacked up at each location (meter)
+exports.LOCATION_HEIGHT = 3
 
 /* constants.js ends here */

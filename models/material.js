@@ -36,17 +36,17 @@ let materialSchema = Schema({
   estimated_export_time: Date,
   height: {
     type: Number,
-    default: 0,
+    default: 1,
     min: 0
   },
   length: {
     type: Number,
-    default: 0,
+    default: 1,
     min: 0
   },
   width: {
     type: Number,
-    default: 0,
+    default: 1,
     min: 0
   },
   repository_id: utils.IntRequired(),
