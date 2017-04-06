@@ -90,7 +90,6 @@ describe("Material", () => {
         description: "test1",
         repository_id: 1,
         location_id: 1,
-        migrations: [],
       }).then((result) => {
         expect(result.id).to.equal(2)
         expect(result.status).to.equal(300)
@@ -117,7 +116,6 @@ describe("Exportinfo", () => {
         description: "test2",
         repository_id: 1,
         location_id: 1,
-        migrations: [],
       }).then(result => mid = result._id)
       let repository = Repository.create({
         id: 98,
@@ -165,7 +163,6 @@ describe("Migration", () => {
         description: "test2",
         repository_id: 1,
         location_id: 1,
-        migrations: [],
       }).then(result => mid = result._id)
       return Promise.all([clean, material])
     })
@@ -202,14 +199,15 @@ describe("Staff", () => {
       return Staff.create({
         name: "Tester",
         account: "123456",
+        passwd: "123456",
         sex: 1,
         age: 20,
-        position: 1,
+        permission: 1,
       }).then((result) => {
         expect(result.sex).to.equal(1)
         expect(result.name).to.equal("Tester")
         expect(result.account).to.equal("123456")
-        expect(result.position).to.equal(1)
+        expect(result.permission).to.equal(1)
         expect(result.age).to.equal(20)
       })
     })

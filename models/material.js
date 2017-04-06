@@ -54,7 +54,7 @@ let materialSchema = Schema({
   status: utils.Integer({
     default: 300
   }),
-  migrations: [Schema.Types.ObjectId],
+  last_migration: Schema.Types.ObjectId,
   location_update_time: {
     type: Date,
     default: () => Date.now()

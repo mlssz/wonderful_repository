@@ -25,6 +25,11 @@ let staffSchema = Schema({
     required: "{PATH} is required!",
     validate: (v) => v.length >= 6
   },
+  passwd: {
+    type: String,
+    required: "{PATH} is required!",
+    validate: (v) => v.length >= 6
+  },
   sex: utils.Integer({
     default: 1,
     min: 0,
@@ -34,7 +39,7 @@ let staffSchema = Schema({
     default: 1,
     min: 1
   }),
-  position: utils.Integer({
+  permission: utils.Integer({
     default: 1,
     min: 0
   }),
