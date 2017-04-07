@@ -17,10 +17,7 @@ let Schema = mongoose.Schema
 // Migration Model
 let migrationSchema = Schema({
   material: utils.IdRequired(),
-  date: {
-    type: Date,
-    required: "{PATH} is required!"
-  },
+  date:  Date,
   from_repository: utils.IntRequired(),
   from_location: utils.IntRequired(),
   to_repository: utils.IntRequired(),

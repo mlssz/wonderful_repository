@@ -25,8 +25,7 @@ let taskSchema = Schema({
     min: 0
   }),
   migration: Schema.Types.ObjectId,
-  err_repository: utils.Integer(),
-  err_location: utils.Integer(),
+  error: Schema.Types.ObjectId,
   publish_time: {
     type: Date,
     default: () => Date.now()

@@ -16,6 +16,7 @@ let Material = require("../models/material.js")
 let Migration = require("../models/migration.js")
 let Staff = require("../models/staff.js")
 let Exportinfo = require("../models/exportinfo.js")
+let Errorinfo = require("../models/errorinfo.js")
 let Task = require("../models/task.js")
 
 describe("Repository", () => {
@@ -128,7 +129,7 @@ describe("Exportinfo", () => {
           avalibale_height: 2,
           materials: []
         }]
-      }).then(result => rid = result._id)
+      }).then(result => rid = result.id)
       return Promise.all([clean, material, repository])
     })
 
@@ -231,6 +232,32 @@ describe("Task", () => {
       return Task.create({}).then(() => Task.find({}).exec().then(result => {
         expect(result).to.have.length(1)
       }))
+    })
+  })
+})
+
+describe("Errorinfo", () => {
+  describe("#create and save errorinfo", () => {
+    before(() => {
+      let clean = Errorinfo.deleteMany({}).exec()
+      return Promise.all([clean])
+    })
+
+    it("should create doc successfully by create method", () => {
+      return Errorinfo.create({
+        repository: 1,
+        location: 3,
+        image: "/sdfa/df.png"
+      }).then((result) => {
+        expect(result.repository).to.equal(1)
+        expect(result.location).to.equal(3)
+      })
+    })
+
+    it("should find one docs", () => {
+      return Staff.find({}).exec().then((result) => {
+        expect(result).to.have.length(1)
+      })
     })
   })
 })

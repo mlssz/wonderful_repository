@@ -41,7 +41,7 @@ let materialSchema = Schema({
   },
   length: {
     type: Number,
-    default: 1,
+    default: 2,
     min: 0
   },
   width: {
