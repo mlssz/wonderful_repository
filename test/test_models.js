@@ -20,6 +20,9 @@ let Errorinfo = require("../models/errorinfo.js")
 let Task = require("../models/task.js")
 
 describe("Repository", () => {
+  before(() => {
+    return Repository.deleteMany({}).exec()
+  })
   describe("#create and save repository", () => {
     before(() => {
       return Repository.deleteMany({}).exec()

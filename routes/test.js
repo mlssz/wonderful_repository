@@ -1,9 +1,10 @@
 let express = require("express")
 let router = express.Router()
 exports.router = router
-exports.path = "/users"
+exports.path = "/test"
 
 /* GET users listing. */
 router.get("/", (req, res, next) => {
-  res.send("respond with a resource")
+  console.log(req.query)
+  res.status(200).json(req.query).end()
 })
