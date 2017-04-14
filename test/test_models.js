@@ -38,7 +38,7 @@ describe("Repository", () => {
           label: "3",
           place: 2,
           avalibale_height: 2,
-          materials: []
+          materials: [[], [], []]
         }]
       }).then((result) => {
         expect(result.id).to.equal(2)
@@ -64,7 +64,6 @@ describe("Repository", () => {
           label: "3",
           place: 2,
           avalibale_height: 2,
-          materials: []
         }]
       })
       return clean.then(()=>createone).then(r => repo=r)
@@ -94,6 +93,7 @@ describe("Material", () => {
         description: "test1",
         repository_id: 1,
         location_id: 1,
+        layer: 0,
       }).then((result) => {
         expect(result.id).to.equal(2)
         expect(result.status).to.equal(300)
@@ -120,6 +120,7 @@ describe("Exportinfo", () => {
         description: "test2",
         repository_id: 1,
         location_id: 1,
+        layer: 0,
       }).then(result => mid = result._id)
       let repository = Repository.create({
         id: 98,
@@ -130,7 +131,6 @@ describe("Exportinfo", () => {
           label: "3",
           place: 2,
           avalibale_height: 2,
-          materials: []
         }]
       }).then(result => rid = result.id)
       return Promise.all([clean, material, repository])
@@ -167,6 +167,7 @@ describe("Migration", () => {
         description: "test2",
         repository_id: 1,
         location_id: 1,
+        layer: 0
       }).then(result => mid = result._id)
       return Promise.all([clean, material])
     })
@@ -177,8 +178,10 @@ describe("Migration", () => {
         date: Date.now(),
         from_repository: 2,
         from_location: 3,
+        from_layer: 0,
         to_repository: 4,
-        to_location: 5
+        to_location: 5,
+        to_layer: 1
       }).then((result) => {
         expect(result.material).to.equal(mid)
       })
@@ -250,6 +253,7 @@ describe("Errorinfo", () => {
       return Errorinfo.create({
         repository: 1,
         location: 3,
+        layer: 1,
         image: "/sdfa/df.png"
       }).then((result) => {
         expect(result.repository).to.equal(1)

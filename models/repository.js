@@ -45,7 +45,10 @@ let repoSchema = Schema({
       default: 60,
       min: 0
     },
-    materials: [Schema.Types.ObjectId]
+    materials: {
+      type:[[Schema.Types.ObjectId]],
+      default: [[], [], []]
+    }
   }]
 })
 

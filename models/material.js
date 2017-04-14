@@ -51,6 +51,7 @@ let materialSchema = Schema({
   },
   repository_id: utils.IntRequired(),
   location_id: utils.IntRequired(),
+  layer: utils.IntRequired({min: 0}),
   status: utils.Integer({
     default: 300
   }),
