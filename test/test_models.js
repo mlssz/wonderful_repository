@@ -38,7 +38,7 @@ describe("Repository", () => {
           label: "3",
           place: 2,
           avalibale_height: 2,
-          materials: [[], [], []]
+          materials_num: [0, 0, 0]
         }]
       }).then((result) => {
         expect(result.id).to.equal(2)
