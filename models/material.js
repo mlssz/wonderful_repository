@@ -21,10 +21,12 @@ let materialSchema = Schema({
     min: 1,
     unique: true
   }),
-  type: utils.Integer({
-    default: 0,
-    min: 0
-  }),
+  type: {
+    type: String,
+    required: "{PATH} is required!",
+    trim: true,
+    minlength: 1
+  },
   description: {
     type: String,
     default: ""
@@ -51,6 +53,7 @@ let materialSchema = Schema({
   },
   repository_id: utils.IntRequired(),
   location_id: utils.IntRequired(),
+  layer: utils.IntRequired({min: 0}),
   status: utils.Integer({
     default: 300
   }),

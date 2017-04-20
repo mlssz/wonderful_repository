@@ -19,6 +19,7 @@ describe("Query", () => {
       description: "test1",
       repository_id: 1,
       location_id: 3,
+      layer: 0,
       status: 301,
     }, {
       type: 0,
@@ -26,6 +27,7 @@ describe("Query", () => {
       description: "test1",
       repository_id: 2,
       location_id: 3,
+      layer: 0,
       status: 301,
     },{
       type: 0,
@@ -33,6 +35,7 @@ describe("Query", () => {
       description: "helper_test",
       repository_id: 1,
       location_id: 5,
+      layer: 0,
       status: 301,
     }, {
       type: 0,
@@ -40,6 +43,7 @@ describe("Query", () => {
       description: "helper_test",
       repository_id: 1,
       location_id: 4,
+      layer: 0,
       status: 200,
     }))
 

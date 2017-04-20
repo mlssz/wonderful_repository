@@ -29,6 +29,9 @@ let errorinfoSchema = Schema({
   location: utils.IntRequired({
     min: 0
   }),
+  layer: utils.IntRequired({
+    min: 0
+  }),
   material: utils.Integer({
     min: 1
   }),

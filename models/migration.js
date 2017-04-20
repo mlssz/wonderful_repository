@@ -20,8 +20,10 @@ let migrationSchema = Schema({
   date:  Date,
   from_repository: utils.IntRequired(),
   from_location: utils.IntRequired(),
+  from_layer: utils.IntRequired({min:0}),
   to_repository: utils.IntRequired(),
-  to_location: utils.IntRequired()
+  to_location: utils.IntRequired(),
+  to_layer: utils.IntRequired({min:0}),
 })
 
 module.exports = mongoose.model("Migration", migrationSchema)
