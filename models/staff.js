@@ -18,17 +18,20 @@ let Schema = mongoose.Schema
 let staffSchema = Schema({
   name: {
     type: String,
-    default: "无名"
+    default: "无名",
+    trim: true,
+    minlength: 1
   },
   account: {
     type: String,
     required: "{PATH} is required!",
-    validate: (v) => v.length >= 6
+    trim: true,
+    minlength: 6
   },
   passwd: {
     type: String,
     required: "{PATH} is required!",
-    validate: (v) => v.length >= 6
+    minlength: 6
   },
   sex: utils.Integer({
     default: 1,

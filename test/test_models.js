@@ -88,7 +88,7 @@ describe("Material", () => {
 
     it("should create doc successfully by create method", () => {
       return Material.create({
-        type: 0,
+        type: "Test1",
         id: 2,
         description: "test1",
         repository_id: 1,
@@ -115,7 +115,7 @@ describe("Exportinfo", () => {
     before(() => {
       let clean = Exportinfo.deleteMany({}).exec()
       let material = Material.create({
-        type: 0,
+        type: "Test2",
         id: 98,
         description: "test2",
         repository_id: 1,
@@ -162,7 +162,7 @@ describe("Migration", () => {
     before(() => {
       let clean = Migration.deleteMany({}).exec()
       let material = Material.create({
-        type: 0,
+        type: "Test3",
         id: 99,
         description: "test2",
         repository_id: 1,
