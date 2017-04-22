@@ -5,8 +5,11 @@ let fs = require("fs")
 let logger = require("morgan")
 let cookieParser = require("cookie-parser")
 let bodyParser = require("body-parser")
+let session = require('express-session')
 
 let app = express()
+
+app.use(session({ secret: 'wonderful', cookie: { maxAge: 60000 }}))
 
 // view engine setup
 app.set("views", path.join(__dirname, "views"))
