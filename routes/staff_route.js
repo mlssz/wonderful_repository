@@ -2,6 +2,7 @@ let express = require("express")
 let router = express.Router()
 let mongoose = require("mongoose")
 let staff = require("../models/staff")
+let findHelp = require("../libs/find_helpers")
 exports.router = router
 exports.path = "/"
 
@@ -91,12 +92,16 @@ router.post("/staff/auth", (req, res, next) => {
   })
 })
 
-router.patch("/staff/auth/:id",(req, res, next) => {
-  var id =req.params.id;
+router.patch("/staff/auth/:id", (req, res, next) => {
+  // if (req.session.user == null && (req.session.user._id+"") != req.params.id) {
+  //   res.status(400).json({error:"安全验证失败"})
+  //   return false;
+  // }
+  var id = req.params.id;
   var passwd = req.body.passwd;
-  staff.updateOne({_id:mongoose.Types.ObjectId(id)},{passwd:passwd},(err, raw) => {
-    if (err){
-      res.status(400).json({error:JSON.stringify(err)})
+  staff.updateOne({ _id: mongoose.Types.ObjectId(id) }, { passwd: passwd }, (err, raw) => {
+    if (err) {
+      res.status(400).json({ error: JSON.stringify(err) })
     } else {
       if (raw.n == 1) {
         if (raw.nModified == 1) {
@@ -115,11 +120,74 @@ router.patch("/staff/auth/:id",(req, res, next) => {
   })
 })
 
-router.get("/staffs/set",(req, res) => {
-  req.session.user = {code:1}
-  res.status(200).end("sdfds");
+router.post("/staffs", (req, res) => {
+  var oneStaff = req.body;
+  var data = [];
+  if (!Array.isArray(oneStaff)) {
+    data.push(oneStaff);
+  } else {
+    data = oneStaff;
+  }
+  staff.insertMany(data, (err, docs) => {
+    if (err) {
+      res.status(200).json({ err: JSON.stringify(err) })
+    } else {
+      if (docs == null && docs.length < 1) {
+        res.status(400).json({ error: "创建失败" })
+      } else {
+        res.status(200).json(docs)
+      }
+    }
+  })
 })
 
-router.get("/staffs/session",(req, res) => {
-  res.json(req.session.user)
+router.head("/staffs", (req, res) => {
+  staff.count(null, (err, num) => {
+    if (err) {
+      res.status(400).json({ error: JSON.stringify(err) })
+    } else {
+      res.status(200).append("num", num).end()
+    }
+  })
+})
+
+router.get("/staffs", (req, res) => {
+  var page = parseInt(req.query.page)
+  var size = parseInt(req.query.limit)
+  var query = req.query.others
+  if (query == null) {
+    staff.find({}, null, { limit: size, skip: size * page }, (err, docs) => {
+      if (err) {
+        res.status(400).json({ error: JSON.stringify(err) })
+      } else {
+        if (docs == null || docs.length < 1) {
+          res.status(400).json({ error: "没有找到相关记录" })
+        } else {
+          res.status(200).json(docs)
+        }
+      }
+    })
+  } else {
+    query = findHelp.findByQuery(staff, query);
+    query = findHelp.slicePage(query, page, size)
+    query.exec().then((result) => {
+      if (result == null || result.length < 1) {
+        res.status(400).json({ error: "没有找到记录" })
+      } else {
+        res.status(200).json(result)
+      }
+    }).catch((err) => {
+      res.status(400).json({ error: JSON.stringify(err) })
+    })
+  }
+})
+
+router.delete("/staffs", (req, res) => {
+  staff.deleteMany({}, (err) => {
+    if (err) {
+      res.status(400).json({ error: "有错误" })
+    } else {
+      res.status(200).json({})
+    }
+  })
 })
