@@ -85,7 +85,7 @@ router.get("/material/:id/migration/:mid", (req, res, next) => {
         } else {
           if (doc != null) {
             if (doc.status == 0) {
-
+              
             } else {
               res.status(400).json({error:"货物已经开始移动，无法修改状态"})
             }
