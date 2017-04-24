@@ -2,10 +2,10 @@ let express = require("express")
 let router = express.Router()
 exports.router = router
 exports.path = "/"
-let exportinfo = require("../models/exportinfo")
+let errorinfo = require("../models/errorinfo")
 
-router.head("/exportinfos",(req, res) => {
-    exportinfo.count(null, (err, num) => {
+router.head("/errors",(req, res) => {
+    errorinfo.count(null, (err, num) => {
     if (err) {
       res.status(400).json({ error: JSON.stringify(err) })
     } else {
@@ -14,12 +14,12 @@ router.head("/exportinfos",(req, res) => {
   })
 })
 
-router.get("/exportinfos", (req, res) => {
+router.get("/errors", (req, res) => {
   var page = parseInt(req.query.page)
   var size = parseInt(req.query.limit)
   var query = req.query.others
   if (query == null) {
-    exportinfo.find({}, null, { limit: size, skip: size * page }, (err, docs) => {
+    errorinfo.find({}, null, { limit: size, skip: size * page }, (err, docs) => {
       if (err) {
         res.status(400).json({ error: JSON.stringify(err) })
       } else {
@@ -31,7 +31,7 @@ router.get("/exportinfos", (req, res) => {
       }
     })
   } else {
-    query = findHelp.findByQuery(exportinfo, query);
+    query = findHelp.findByQuery(errorinfo, query);
     query = findHelp.slicePage(query, page, size)
     query.exec().then((result) => {
       if (result == null || result.length < 1) {
