@@ -32,9 +32,7 @@ let errorinfoSchema = Schema({
   layer: utils.IntRequired({
     min: 0
   }),
-  material: utils.Integer({
-    min: 1
-  }),
+  material: utils.IdRequired(),
   image: {
     type: String,
     required: "{PATH} is required!"

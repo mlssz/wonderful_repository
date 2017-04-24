@@ -76,30 +76,21 @@ router.delete("/material/:id", (req, res, next) => {
 })
 /*取消移动物资*/
 router.get("/material/:id/migration/:mid", (req, res, next) => {
-  let id = Number.parseInt(req.params.id);
-  let mid = req.params.mid;
-  if (id != null && !isNaN(id) && mid != null) {
-      task.findOne({migration:mongoose.Types.ObjectId(mid)},function(err,doc){
-        if (err) {
-          res.status(400).json({error:JSON.stringify(err)})
-        } else {
-          if (doc != null) {
-            if (doc.status == 0) {
-              
-            } else {
-              res.status(400).json({error:"货物已经开始移动，无法修改状态"})
-            }
-          } else {
-            res.status(404).end("没有找到相关信息")
-          }
-        }
-      })
-  } else {
-    res.status(400).json({error:"参数不匹配"})
-  }
+  let maid = req.params.id;
+  let miid = req.params.mid;
+  materials.findOne({_id:mongoose.Types.ObjectId(maid)},(err, material) => {
+    if (err) {
+      res.status(400).json({error:err})
+    } else {
+      if (material) {
+        migrations
+      } else {
+        res.status(400).json({error:"物品不存在，操作无效"})
+      }
+    }
+  })
 })
 
-router.delete("/", (req, res, next) => {
-  let result = req.body["value"] || "none"
-  res.json({ "value": result })
+router.get("/material/:id/migrations", (req, res) => {
+
 })
