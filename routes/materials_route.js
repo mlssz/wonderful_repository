@@ -11,12 +11,12 @@ router.get("/repositories/:id/materials/", (req, res, next) => res.status(501).e
 
 /*获取一个特定的物资的基本详细信息*/
 router.get("/material/:id/", (req, res, next) => {
-  var id = Number.parseInt(req.params.id)
-  if (id !== null && !isNaN(id)) {
-    materials.findOne({ id: id }, (err, doc) => {
+  var id = req.params.id
+  if (id !== null) {
+    materials.findOne({ _id: id }, (err, doc) => {
       if (err) {
         console.log(err)
-        res.status(400).end({error:"数据库发生错误"})
+        res.status(400).end({ error: "数据库发生错误" })
       } else {
         if (doc != null) {
           res.json(doc)
@@ -33,23 +33,23 @@ router.get("/material/:id/", (req, res, next) => {
 router.patch("/material/:id/", (req, res, next) => {
   var id = Number.parseInt(req.params.id)
   if (id !== null && !isNaN(id)) {
-    materials.updateOne({id:id}, req.body, (err, raw) => {
+    materials.updateOne({ id: id }, req.body, (err, raw) => {
       if (err) {
         handleError(err)
-        res.status(400).json({error:JSON.stringify(err)});
+        res.status(400).json({ error: JSON.stringify(err) });
       } else {
         if (raw.n == 1) {
           if (raw.nModified == 1) {
             if (raw.ok == 1) {
               res.status(200).end()
-            } else{
-              res.status(400).json({error:"记录修改失败"})
+            } else {
+              res.status(400).json({ error: "记录修改失败" })
             }
           } else {
-            res.status(400).json({error:"修改的数据和之前一样"})
+            res.status(400).json({ error: "修改的数据和之前一样" })
           }
         } else {
-          res.status(400).json({error:"没有找到记录"})
+          res.status(400).json({ error: "没有找到记录" })
         }
       }
     })
@@ -62,10 +62,10 @@ router.patch("/material/:id/", (req, res, next) => {
 router.delete("/material/:id", (req, res, next) => {
   var id = Number.parseInt(req.params.id)
   if (id !== null && !isNaN(id)) {
-    materials.deleteOne({id:id}, (err) => {
+    materials.deleteOne({ id: id }, (err) => {
       if (err) {
         handleError(err)
-        res.status(400).json({error:JSON.parse(err)})
+        res.status(400).json({ error: JSON.parse(err) })
       } else {
         res.status(200).end()
       }
@@ -78,14 +78,14 @@ router.delete("/material/:id", (req, res, next) => {
 router.get("/material/:id/migration/:mid", (req, res, next) => {
   let maid = req.params.id;
   let miid = req.params.mid;
-  materials.findOne({_id:mongoose.Types.ObjectId(maid)},(err, material) => {
+  materials.findOne({ _id: mongoose.Types.ObjectId(maid) }, (err, material) => {
     if (err) {
-      res.status(400).json({error:err})
+      res.status(400).json({ error: err })
     } else {
       if (material) {
         migrations
       } else {
-        res.status(400).json({error:"物品不存在，操作无效"})
+        res.status(400).json({ error: "物品不存在，操作无效" })
       }
     }
   })
