@@ -40,7 +40,7 @@ let repoSchema = Schema({
     available_space: utils.IntRequired({
       min: 1
     }),
-    avalibale_space: {
+    available_space: {
       type: Number,
       default: 60,
       min: 0
