@@ -73,7 +73,7 @@ router.get("/tasks", (req, res) => {
 
 function combineTasks(task) {
     let _id = task._id
-    
+
 }
 
 router.post("/tasks", (req, res) => {

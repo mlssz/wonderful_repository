@@ -326,7 +326,7 @@ router.post("/material/:id/migrations", (req, res) => {
 // 录入多个物资
 router.post("/materials", (req, res) => {
   let rb = req.body
-  repository.findOne({ _id: ObjectId(rb.repository_id) }, (err, repo) => {
+  repository.findOne({ id: rb.repository_id }, (err, repo) => {
     if (err) {
       res.status(400).json({ error: err })
     } else {
@@ -336,7 +336,7 @@ router.post("/materials", (req, res) => {
         repo.stored_count += rb.num
         repo.locations[location].available_space -= rb.num
         repo.locations[location].materials_num[layer] += rb.num
-        repository.updateOne({ _id: ObjectId(repository) }, { $set: repo }, (err, raw) => {
+        repository.updateOne({ _id: ObjectId(repo._id) }, { $set: repo }, (err, raw) => {
           if (err) {
             res.status(400).json({ error: err })
           } else {
@@ -538,7 +538,7 @@ router.get("/repository/:id/materials", (req, res) => {
   let size = parseInt(req.query.limit)
   let others = req.query.others
   if (query == null) {
-    materials.find({}, null, { limit: size, skip: size * page }, (err, docs) => {
+    materials.find({repository_id:id}, null, { limit: size, skip: size * page }, (err, docs) => {
       if (err) {
         res.status(400).json({ error: JSON.stringify(err) })
       } else {
