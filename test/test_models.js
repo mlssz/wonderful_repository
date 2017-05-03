@@ -242,13 +242,13 @@ describe("Task", () => {
       }))
     })
   })
-  describe("#create and save task", () => {
+  describe("#combine migration and error", () => {
     before(() => {
       let clean = Task.deleteMany({}).exec()
       return Promise.all([clean, ])
     })
 
-    it("should create doc successfully by create method", () => {
+    it("should return task with property material and error and staff", () => {
       return  Material.create({
         type: "Test3",
         id: 5,
@@ -257,23 +257,37 @@ describe("Task", () => {
         location_id: 1,
         layer: 0,
       }).then(result => {
-        return Migration.create({
-          material: result._id,
-          date: Date.now(),
-          from_repository: 1,
-          from_location: 3,
-          from_layer: 0,
-          to_repository: 2,
-          to_location: 5,
-          to_layer: 1
-        })
+        return Promise.all([
+          Migration.create({
+            material: result._id,
+            date: Date.now(),
+            from_repository: 1,
+            from_location: 3,
+            from_layer: 0,
+            to_repository: 2,
+            to_location: 5,
+            to_layer: 1
+          }),
+          Staff.create({
+            name: "Tester",
+            account: "123456",
+            passwd: "123456",
+            sex: 1,
+            age: 20,
+            permission: 1,
+          })
+        ])
       }).then(result => {
         return Task.create({
-          migration:ObjectId("59095be2e841bb2f59ad5e1a"),
+          staff: result[1]._id,
+          migration: result[0]._id
           // result._id
         })
-      }).then(result => {
-        result.combine_material_or_error().then(console.log)
+      }).then(r => r.combine_material_or_error(true)).then(result => {
+        expect(result).to.have.property('material')
+        expect(result).to.have.property('migration')
+        expect(result).to.have.property('staff')
+        expect(result.material.id).to.equal(5)
       })
 
     })

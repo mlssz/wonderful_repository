@@ -15,6 +15,7 @@ let utils = require("./utils.js")
 let Migration = require("./migration.js")
 let Material = require("./material.js")
 let Errorinfo = require("./errorinfo.js")
+let Staff = require("./staff.js")
 
 let ObjectId = mongoose.Types.ObjectId
 let Schema = mongoose.Schema
@@ -40,34 +41,41 @@ let taskSchema = Schema({
   remark: String
 })
 
-taskSchema.methods.combine_material_or_error = function() {
+taskSchema.methods.combine_material_or_error = function(with_staff=false) {
   let task = this
   let action = task.action
 
+  let combine_func
   if(500 <= action && action <600){
     // combine migration if action starts with 5
-    return task._combine_material(task)
+    combine_func = task._combine_material(task)
   }
   if(600 <= action && action <700){
     // combine migration if action starts with 6
-    return task._combine_error(task)
+    combine_func = task._combine_error(task)
   }
+
+  if(!with_staff || task.staff === undefined || task.staff === null || !task.staff) {
+    return combine_func
+  }
+
+  return combine_func
+    .then(v => Staff.findOne({_id: task.staff}).exec().then(s => {
+      v.staff = s.toJSON()
+      return v
+    }))
 }
-
 taskSchema.methods._combine_material = task => {
-  let migration_select = {date: 0}
-  let material_select = {repository_id: 0, location_id: 0, layer: 0}
-
   // find migration
   return Migration
-    .findOne({_id: ObjectId(task.migration)}, migration_select).exec()
+    .findOne({_id: ObjectId(task.migration)}).exec()
     .then(migration => {
       if (migration === null) throw "Invalid Task: Not Found Migration."
 
       // find material
       return Promise.all([
         migration,
-        Material.findOne({_id: migration.material}, material_select).exec()
+        Material.findOne({_id: migration.material}).exec()
       ])
     })
     .then(data => {
@@ -83,31 +91,26 @@ taskSchema.methods._combine_material = task => {
     })
 }
 taskSchema.methods._combine_error = task => {
-  let error_select = {}
-  let material_select = {}
-
-  // find migration
+  // find errorinfo
   return Errorinfo
-    .findOne({_id: ObjectId(task.error)}, error_select).exec()
+    .findOne({_id: ObjectId(task.error)}).exec()
     .then(errorinfo => {
       if (errorinfo === null) throw `Invalid Task: Not Found Errorinfo(${task.error}).`
 
       // find material
-      return Material
-        .findOne({_id: errorinfo.material}, material_select).exec()
-        .then(material => {
-          if (material === null) throw `Invalid Task: Not Found Material(${errorinfo.migration}).`
+      return Promise.all([
+        errorinfo,
+        Material.findOne({_id: errorinfo.material}).exec()
+      ])
+    }).then( data => {
+      if (data[1] === null) throw "Invalid Task: Not Found Material."
 
-          return Object.assign(material.toJSON(), errorinfo.toJSON())
-        })
-    })
-    .then( data => {
       let result = task.toJSON()
 
-      delete data["material"]
-      delete result["migration"]
+      delete data[0]["material"]
 
-      result["material"] = data
+      result["material"] = data[1]
+      result["error"] = data[0]
       return result
     })
 }
