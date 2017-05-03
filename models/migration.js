@@ -18,10 +18,10 @@ let Schema = mongoose.Schema
 let migrationSchema = Schema({
   material: utils.IdRequired(),
   date:  Date,
-  from_repository: utils.IdRequired(),
+  from_repository: utils.IntRequired(),
   from_location: utils.IntRequired(),
   from_layer: utils.IntRequired({min:0}),
-  to_repository: utils.IdRequired(),
+  to_repository: utils.IntRequired(),
   to_location: utils.IntRequired(),
   to_layer: utils.IntRequired({min:0}),
 })

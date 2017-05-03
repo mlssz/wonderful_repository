@@ -19,8 +19,7 @@ let Exportinfo = require("../models/exportinfo.js")
 let Errorinfo = require("../models/errorinfo.js")
 let Task = require("../models/task.js")
 
-let mongoose = require("mongoose")
-let ObjectId = mongoose.Types.ObjectId
+let ObjectId = require("mongoose").Types.ObjectId
 
 describe("Repository", () => {
   before(() => {
@@ -94,7 +93,7 @@ describe("Material", () => {
         type: "Test1",
         id: 2,
         description: "test1",
-        repository_id: ObjectId("59095be2e841bb2f59ad5e1b"),
+        repository_id: 1,
         location_id: 1,
         layer: 0,
       }).then((result) => {
@@ -121,7 +120,7 @@ describe("Exportinfo", () => {
         type: "Test2",
         id: 98,
         description: "test2",
-        repository_id: ObjectId("59095be2e841bb2f59ad5e1b"),
+        repository_id: 1,
         location_id: 1,
         layer: 0,
       }).then(result => mid = result._id)
@@ -135,7 +134,7 @@ describe("Exportinfo", () => {
           place: 2,
           avalibale_height: 2,
         }]
-      }).then(result => rid = result._id)
+      }).then(result => rid = result.id)
       return Promise.all([clean, material, repository])
     })
 
@@ -168,7 +167,7 @@ describe("Migration", () => {
         type: "Test3",
         id: 99,
         description: "test2",
-        repository_id: ObjectId("59095be2e841bb2f59ad5e1b"),
+        repository_id: 1,
         location_id: 1,
         layer: 0
       }).then(result => mid = result._id)
@@ -179,10 +178,10 @@ describe("Migration", () => {
       return Migration.create({
         material: mid,
         date: Date.now(),
-        from_repository: ObjectId("59095be2e841bb2f59ad5e1b"),
+        from_repository: 2,
         from_location: 3,
         from_layer: 0,
-        to_repository: ObjectId("59095be2e841bb2f59ad5e1b"),
+        to_repository: 4,
         to_location: 5,
         to_layer: 1
       }).then((result) => {
@@ -251,27 +250,27 @@ describe("Task", () => {
 
     it("should create doc successfully by create method", () => {
       return  Material.create({
-          type: "Test3",
-          id: 5,
-          description: "test3",
-          repository_id: ObjectId("59095be2e841bb2f59ad5e1b"),
-          location_id: 1,
-          layer: 0,
+        type: "Test3",
+        id: 5,
+        description: "test3",
+        repository_id: 1,
+        location_id: 1,
+        layer: 0,
       }).then(result => {
         return Migration.create({
           material: result._id,
           date: Date.now(),
-          from_repository: ObjectId("59095be2e841bb2f59ad5e1b"),
+          from_repository: 1,
           from_location: 3,
           from_layer: 0,
-          to_repository: ObjectId("59095be2e841bb2f59ad5e1b"),
+          to_repository: 2,
           to_location: 5,
           to_layer: 1
         })
       }).then(result => {
         return Task.create({
           migration:ObjectId("59095be2e841bb2f59ad5e1a"),
-         // result._id
+          // result._id
         })
       }).then(result => {
         result.combine_material_or_error().then(console.log)
@@ -283,27 +282,20 @@ describe("Task", () => {
 
 describe("Errorinfo", () => {
   describe("#create and save errorinfo", () => {
-    let mid
     before(() => {
       let clean = Errorinfo.deleteMany({}).exec()
-      let material = Material.create({
-        type: "Test2",
-        description: "test2",
-        repository_id: ObjectId("59095be2e841bb2f59ad5e1b"),
-        location_id: 1,
-        layer: 1,
-      }).then(result => mid = result._id)
-      return Promise.all([clean, material])
+      return Promise.all([clean])
     })
 
     it("should create doc successfully by create method", () => {
       return Errorinfo.create({
-        repository: ObjectId("59095be2e841bb2f59ad5e1b"),
+        repository: 1,
         location: 3,
         layer: 1,
-        material: mid,
+        material: ObjectId("59095be2e841bb2f59ad5e1a"),
         image: "/sdfa/df.png"
       }).then((result) => {
+        expect(result.repository).to.equal(1)
         expect(result.location).to.equal(3)
       })
     })

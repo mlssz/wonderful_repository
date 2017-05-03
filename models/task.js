@@ -46,11 +46,11 @@ taskSchema.methods.combine_material_or_error = function() {
 
   if(500 <= action && action <600){
     // combine migration if action starts with 5
-    task._combine_material(task)
+    return task._combine_material(task)
   }
   if(600 <= action && action <700){
     // combine migration if action starts with 6
-    task._combine_error(task)
+    return task._combine_error(task)
   }
 }
 
@@ -65,21 +65,20 @@ taskSchema.methods._combine_material = task => {
       if (migration === null) throw "Invalid Task: Not Found Migration."
 
       // find material
-      return Material
-        .findOne({_id: migration.material}, material_select).exec()
-        .then(material => {
-          if (material === null) throw "Invalid Task: Not Found Material."
-
-          return Object.assign(material.toJSON(), migration.toJSON())
-        })
+      return Promise.all([
+        migration,
+        Material.findOne({_id: migration.material}, material_select).exec()
+      ])
     })
-    .then( data => {
+    .then(data => {
+      if (data[1] === null) throw "Invalid Task: Not Found Material."
+
       let result = task.toJSON()
 
-      delete data["material"]
-      delete result["migration"]
+      delete data[0]["material"]
 
-      result["material"] = data
+      result["material"] = data[1]
+      result["migration"] = data[0]
       return result
     })
 }
