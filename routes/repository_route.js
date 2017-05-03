@@ -12,8 +12,8 @@ let mongoose = require("mongoose")
 let ObjectId = mongoose.Types.ObjectId
 
 router.get("/repository/:id", (req, res) => {
-    let id = req.params.id;
-    repository.findOne({ _id: ObjectId(id) }, (err, doc) => {
+    let id = Number.parseInt(req.params.id);
+    repository.findOne({ id: (id) }, (err, doc) => {
         if (err) {
             res.status(400).json({ error: err })
         } else {
@@ -27,7 +27,7 @@ router.get("/repository/:id", (req, res) => {
 })
 
 router.delete("/repository/:id", (req, res) => {
-    let id = req.params.id;
+    let id = Number.parseInt(req.params.id);
     if (id != null && id.length == 24) {
         id = ObjectId(id)
     } else {
@@ -192,7 +192,7 @@ router.delete("/repositories", (req, res) => {
 })
 
 router.get("/repository/:id/locations", (req, res) => {
-    repository.find({ _id: ObjectId(req.params.id) }, "locations", (err, repos) => {
+    repository.find({ id: (Number.parseInt(req.params.id)) }, "locations", (err, repos) => {
         if (err) {
             res.status(400).json({ error: err })
         } else {
@@ -208,12 +208,12 @@ router.get("/repository/:id/locations", (req, res) => {
 
 
 router.get("/repository/:id/empty-location", (req, res) => {
-    let id = req.params.id;
+    let id = Number.parseInt(req.params.id);
     let num = parseInt(req.query.num)
     let width = parseInt(req.query.width)
     let length = parseInt(req.query.length)
     let height = parseInt(req.query.height)
-    repository.findOne({ _id: ObjectId(id) }, (err, doc) => {
+    repository.findOne({ id: (id) }, (err, doc) => {
         if (err) {
             res.status(400).json({ error: err })
         } else {

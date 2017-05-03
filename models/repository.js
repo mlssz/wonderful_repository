@@ -38,13 +38,9 @@ let repoSchema = Schema({
       required: "{PATH} is required!"
     },
     available_space: utils.IntRequired({
-      min: 1
-    }),
-    available_space: {
-      type: Number,
       default: 60,
       min: 0
-    },
+    }),
     materials_num: {
       type:[Number],
       default: [0, 0, 0]
