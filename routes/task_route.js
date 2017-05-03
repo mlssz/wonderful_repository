@@ -71,6 +71,11 @@ router.get("/tasks", (req, res) => {
     }
 })
 
+function combineTasks(task) {
+    let _id = task._id
+    
+}
+
 router.post("/tasks", (req, res) => {
     let account = req.body.account
     staff.findOne({ account: account }, (err, doc) => {
@@ -86,12 +91,18 @@ router.post("/tasks", (req, res) => {
                         res.status(400).json({ error: err })
                     } else {
                         if (num >= 0 && num < 10) {
-                            task.find({ staff: null }, null, {limit:(10-num)},(err, ss) => {
+                            task.find({ staff: null }, null, { limit: (10 - num) }, (err, ss) => {
                                 if (err) {
                                     res.status(400).json({ error: err })
                                 } else {
                                     ss = ss.toObject()
-                                    task.update({$in:ss},{staff:doc._id})
+                                    task.update({ $in: ss }, { staff: doc._id }, (err) => {
+                                        if (err) {
+                                            res.status(400).json({ error: err })
+                                        } else {
+                                            // res.
+                                        }
+                                    })
                                 }
                             })
                         } else {
