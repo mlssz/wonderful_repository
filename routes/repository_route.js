@@ -220,7 +220,7 @@ router.get("/repository/:id/empty-location", (req, res) => {
     let width = parseInt(req.query.width)
     let length = parseInt(req.query.length)
     let height = parseInt(req.query.height)
-    repository.findOne({ id: (id) }, (err, doc) => {
+    repository.findOne({ id: id }, (err, doc) => {
         if (err) {
             res.status(400).json({ error: err })
         } else {
