@@ -196,11 +196,24 @@ router.get("/repository/:id/locations", (req, res) => {
         if (err) {
             res.status(400).json({ error: err })
         } else {
-            if (repos == null || repos.length < 1) {
-                res.status(400).json({ error: "没有找到相关记录" })
-            } else {
-                res.status(200).json(repos[0].locations)
+            repos = repos[0].locations
+            let ok = []
+            for (let i in repos) {
+                for (let j = 0; j < 3; j++) {
+                    if ((20-repos[i].materials_num[j]) >= num){
+                        ok.push({location:parseInt(i),layer:j,num:num})
+                        num = 0
+                        break
+                    } else {
+                        ok.push({location:parseInt(i),layer:j,num:(20-repos[i].materials_num[j])})
+                        num = num - (20-repos[i].materials_num[j])
+                    }
+                }
+                if (num < 1) {
+                    break;
+                }
             }
+            res.status(200).json(ok)
         }
     })
 })
