@@ -23,7 +23,7 @@ let errorinfoSchema = Schema({
     min:1,
     max:2
   }),
-  repository: utils.IdRequired({}),
+  repository: utils.IntRequired({}),
   location: utils.IntRequired({
     min: 0
   }),
