@@ -41,14 +41,14 @@ let taskSchema = Schema({
   remark: String
 })
 
-taskSchema.methods.combine_material_or_error = function(with_staff=false) {
+taskSchema.methods.combine_migration_or_error = function(with_staff=false) {
   let task = this
   let action = task.action
 
   let combine_func
   if(500 <= action && action <600){
     // combine migration if action starts with 5
-    combine_func = task._combine_material(task)
+    combine_func = task._combine_migration(task)
   }
   if(600 <= action && action <700){
     // combine migration if action starts with 6
@@ -65,7 +65,7 @@ taskSchema.methods.combine_material_or_error = function(with_staff=false) {
       return v
     }))
 }
-taskSchema.methods._combine_material = task => {
+taskSchema.methods._combine_migration = task => {
   // find migration
   return Migration
     .findOne({_id: ObjectId(task.migration)}).exec()
