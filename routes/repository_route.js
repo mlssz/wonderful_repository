@@ -185,7 +185,8 @@ router.delete("/repositories", (req, res) => {
     })
 })
 
-router.get("/repository/:id/locations", (req, res) => {
+router.get("/repository/:id/empty-location", (req, res) => {
+    let num = req.query.num
     repository.find({ id: (Number.parseInt(req.params.id)) }, "locations", (err, repos) => {
         if (err) {
             res.status(400).json({ error: err })
@@ -214,7 +215,7 @@ router.get("/repository/:id/locations", (req, res) => {
 
 
 
-router.get("/repository/:id/empty-location", (req, res) => {
+router.get("/repository/:id/locations", (req, res) => {
     let id = Number.parseInt(req.params.id);
     let num = parseInt(req.query.num)
     let width = parseInt(req.query.width)
