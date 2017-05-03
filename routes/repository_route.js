@@ -27,13 +27,7 @@ router.get("/repository/:id", (req, res) => {
 })
 
 router.delete("/repository/:id", (req, res) => {
-    let id = Number.parseInt(req.params.id);
-    if (id != null && id.length == 24) {
-        id = ObjectId(id)
-    } else {
-        res.status(400).json({ error: "参数ID不合要求" })
-        return false
-    }
+    let id = Number.parseInt(req.params.id)
     migration.find({ $or: [{ to_repository: id }, { from_repository: id }] }, "_id", (err, miids) => {
         if (err) {
             res.status(400).json({ error: "获取迁移信息失败" + err })
