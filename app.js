@@ -40,7 +40,7 @@ routes = routes
   .filter(r => r !== null).sort()
   .map((r) => r[1])
 routes.forEach((r) => {
-  app.use(r.path, r.router)
+  app.use(`/api${r.path}`, r.router)
 })
 
 // catch 404 and forward to error handler
