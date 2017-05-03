@@ -11,8 +11,6 @@ let ObjectId = mongoose.Types.ObjectId
 exports.router = router
 exports.path = "/"
 
-router.get("/repositories/:id/materials/", (req, res, next) => res.status(501).end())
-
 // 查看物品移动记录数量
 router.get("/material/migrations", (req, res) => {
   migrations.count(null, (err, num) => {
@@ -519,13 +517,13 @@ router.delete("/materials", (req, res) => {
 })
 
 router.head("/repository/:id/materials", (req, res) => {
-  let id = req.params.id
+  let id = parseInt(req.params.id)
   let others = req.query.others
-  let con = { repository_id: ObjectId(id) }
+  let con = { repository_id: id }
   for (let i in others) {
     con[i] = others[i]
   }
-  materials.count({ repository_id: ObjectId(id) }, (err, count) => {
+  materials.count({ repository_id: id }, (err, count) => {
     if (err) {
       res.status(400).json({ error: err })
     } else {
@@ -535,7 +533,7 @@ router.head("/repository/:id/materials", (req, res) => {
 })
 
 router.get("/repository/:id/materials", (req, res) => {
-  let id = req.params.id
+  let id = parseInt(req.params.id)
   let page = parseInt(req.query.page)
   let size = parseInt(req.query.limit)
   let others = req.query.others
@@ -567,12 +565,12 @@ router.get("/repository/:id/materials", (req, res) => {
 })
 
 router.head("/repository/:rid/location/:lid/materials", (req, res) => {
-  let rid = req.params.rid
-  let lid = req.params.lid
+  let rid = parseInt(req.params.rid)
+  let lid = parseInt(req.params.lid)
   let others = req.query.others
   let con = {
-    repository_id: ObjectId(rid),
-    location_id: ObjectId(lid)
+    repository_id: rid,
+    location_id: lid
   }
   for (let i in others) {
     con[i] = others[i]
@@ -587,14 +585,14 @@ router.head("/repository/:rid/location/:lid/materials", (req, res) => {
 })
 
 router.get("/repository/:rid/location/:lid/materials", (req, res) => {
-  let rid = req.params.rid
-  let lid = req.params.lid
+  let rid = parseInt(req.params.rid)
+  let lid = parseInt(req.params.lid)
   let page = parseInt(req.query.page)
   let size = parseInt(req.query.limit)
   let others = req.query.others
   let con = {
-    repository_id: ObjectId(rid),
-    location_id: ObjectId(lid)
+    repository_id: rid,
+    location_id: lid
   }
   for (let i in others) {
     con[i] = others[i]
