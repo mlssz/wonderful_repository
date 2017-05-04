@@ -325,19 +325,33 @@ router.post("/material/:id/migrations", (req, res) => {
 
 // 录入多个物资
 router.post("/materials", (req, res) => {
-  let rb = req.body
-  repository.findOne({ id: rb.repository_id }, (err, repo) => {
+  let type = req.body.type
+  let description = req.body.description
+  let import_time = Date.now()
+  let estimated_export_time = Date.now()
+  let height = parseInt(req.body.height)
+  let width = parseInt(req.body.width)
+  let length = parseInt(req.body.length)
+  let repository_id = parseInt(req.body.repository_id)
+  let location_id = parseInt(req.body.location_id)
+  let layer = parseInt(req.body.layer)
+  let num = parseInt(req.body.num)
+  repository.findOne({ id: repository_id }, (err, repo) => {
     if (err) {
       res.status(400).json({ error: err })
     } else {
       repo = repo.toObject()
-      console.log(repo.locations[rb.location_id])
-      if ((20 - repo.locations[rb.location_id].materials_num[rb.layer]) >= rb.num) {
-        repo.available_space -= rb.num
-        repo.stored_count += rb.num
-        repo.locations[rb.location_id].available_space -= rb.num
-        repo.locations[rb.location_id].materials_num[rb.layer] += rb.num
-        repository.updateOne({ _id: ObjectId(repo._id) }, { $set: repo }, (err, raw) => {
+      if ((repo.locations[location_id].materials_num[layer] < 20) && ((20 - repo.locations[location_id].materials_num[layer]) >= num)) {
+        repo.available_space -= num
+        repo.stored_count += num
+        repo.locations[location_id].available_space -= num
+        repo.locations[location_id].materials_num[layer] += num
+        let up = {}
+        up["available_space"] = repo.available_space
+        up["stored_count"] = repo.stored_count
+        up["locations." + location_id + ".available_space"] = repo.locations[location_id].available_space
+        up["locations." + location_id + ".materials_num"] = repo.locations[location_id].materials_num
+        repository.updateOne({ _id: ObjectId(repo._id) }, { $set: up }, (err, raw) => {
           if (err) {
             res.status(400).json({ error: err })
           } else {
@@ -345,18 +359,18 @@ router.post("/materials", (req, res) => {
               if (raw.nModified == 1) {
                 if (raw.ok == 1) {
                   let ms = []
-                  for (let i = 0; i < rb.num; i++) {
+                  for (let i = 0; i < num; i++) {
                     let m = {
-                      type: rb.type,
-                      description: rb.description,
-                      import_time: rb.import_time,
-                      estimated_export_time: rb.estimated_export_time,
-                      height: rb.height,
-                      width: rb.width,
-                      length: rb.height,
-                      repository_id: rb.repository_id,
-                      location_id: rb.location_id,
-                      layer: rb.layer,
+                      type: type,
+                      description: description,
+                      import_time: import_time,
+                      estimated_export_time: estimated_export_time,
+                      height: height,
+                      width: width,
+                      length: height,
+                      repository_id: repository_id,
+                      location_id: location_id,
+                      layer: layer,
                       status: 300,
                       last_migration: null,
                       location_update_time: null
@@ -369,6 +383,8 @@ router.post("/materials", (req, res) => {
                     } else {
                       res.status(201).json(docs)
                     }
+                  }).catch((err) => {
+                    console.log(err)
                   })
                 } else {
                   res.status(400).json({ error: "记录修改失败" })
@@ -381,6 +397,7 @@ router.post("/materials", (req, res) => {
             }
           }
         })
+
       } else {
         res.status(400).json({ error: "空间大小不够" })
       }
@@ -429,7 +446,7 @@ router.get("/materials", (req, res) => {
   }
 })
 
-/*删除所有物资*/
+/*删除所有物资*/Promise
 router.delete("/materials", (req, res) => {
   let hand = new Promise((resolve, reject) => {
     materials.deleteMany({}, (err) => {
@@ -539,7 +556,7 @@ router.get("/repository/:id/materials", (req, res) => {
   let size = parseInt(req.query.limit)
   let others = req.query.others
   if (query == null) {
-    materials.find({repository_id:id}, null, { limit: size, skip: size * page }, (err, docs) => {
+    materials.find({ repository_id: id }, null, { limit: size, skip: size * page }, (err, docs) => {
       if (err) {
         res.status(400).json({ error: JSON.stringify(err) })
       } else {

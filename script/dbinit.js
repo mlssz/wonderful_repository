@@ -20,7 +20,7 @@ let data = {
         { actual_export_time: Date.now(), material: null, destination: "去该去的地方", from_repository: 1 }
     ],
     material: [
-        { "_id": ObjectId("58fd9393c759b42871a40658"), "__v": 0, "type": "0", "estimated_export_time": ISODate("2017-04-24T05:56:34.590Z"), "repository_id": ObjectId("58fd9e42de48e42d23c6c37d"), "location_id": 1, "layer": 1, "last_migration": null, "location_update_time": ISODate("2017-04-24T05:56:34.590Z"), "status": 300, "width": 1, "length": 1, "height": 1, "import_time": ISODate("2017-04-24T05:56:34.590Z"), "description": "A", "id": 1 }
+        { "_id": ObjectId("58fd9393c759b42871a40658"), "__v": 0, "type": "0", "estimated_export_time": ISODate("2017-04-24T05:56:34.590Z"), "repository_id": 1, "location_id": 1, "layer": 1, "last_migration": null, "location_update_time": ISODate("2017-04-24T05:56:34.590Z"), "status": 300, "width": 1, "length": 1, "height": 1, "import_time": ISODate("2017-04-24T05:56:34.590Z"), "description": "A", "id": 1 }
     ],
     migration: [
         { material: null, date: null, from_repository: 1, from_location: 1, from_layer: 1, to_repository: 2, to_location: 1, to_layer: 1 }
