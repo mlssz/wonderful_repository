@@ -61,7 +61,7 @@ router.delete("/repository/:id", (req, res) => {
 })
 
 function deleteOne(id, req, res) {
-    repository.deleteOne({ _id: id }, (err) => {
+    repository.deleteOne({ id: id }, (err) => {
         if (err) {
             res.status(400).json({ error: "删除仓库失败" + err })
         } else {
