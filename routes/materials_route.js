@@ -331,11 +331,12 @@ router.post("/materials", (req, res) => {
       res.status(400).json({ error: err })
     } else {
       repo = repo.toObject()
-      if (repo.locations[rb.location_id].materials_num[layer] > rb.num) {
+      console.log(repo.locations[rb.location_id])
+      if ((20 - repo.locations[rb.location_id].materials_num[rb.layer]) >= rb.num) {
         repo.available_space -= rb.num
         repo.stored_count += rb.num
-        repo.locations[location].available_space -= rb.num
-        repo.locations[location].materials_num[layer] += rb.num
+        repo.locations[rb.location_id].available_space -= rb.num
+        repo.locations[rb.location_id].materials_num[rb.layer] += rb.num
         repository.updateOne({ _id: ObjectId(repo._id) }, { $set: repo }, (err, raw) => {
           if (err) {
             res.status(400).json({ error: err })
@@ -366,7 +367,7 @@ router.post("/materials", (req, res) => {
                     if (err) {
                       res.status(400).json({ error: err })
                     } else {
-                      res.status(200).json(docs)
+                      res.status(201).json(docs)
                     }
                   })
                 } else {

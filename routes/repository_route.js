@@ -191,6 +191,10 @@ router.get("/repository/:id/empty-location", (req, res) => {
         if (err) {
             res.status(400).json({ error: err })
         } else {
+            if (repos == null || repos.length < 1) {
+                res.status(400).json({error:"仓库不存在"})
+                return false
+            }
             repos = repos[0].locations
             let ok = []
             for (let i in repos) {
