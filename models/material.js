@@ -17,7 +17,7 @@ let Schema = mongoose.Schema
 // Material Model
 let materialSchema = Schema({
   id: utils.Integer({
-    default: () => Date.now(),
+    default: () => Math.floor(Date.now() / 100) * 10000 + Math.floor(Math.random()*10000),
     min: 1,
     unique: true
   }),
