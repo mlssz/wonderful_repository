@@ -24,8 +24,13 @@ const findByQuery = (model, query) => {
   let conditions = {"$and":[]}
   let and = conditions["$and"]
   for(let i of query) {
-    if(i.key === undefined || typeof i.key !== "string") {
-      return Promise.reject("Invalid Query Item: key should be a string.")
+    if(i.key === undefined) {
+      let p = Promise.reject("Invalid Query Item: key should be a string.")
+      p.exec = function() {return this}
+      p.exec.bind(p)
+      p.count = function() {return this}
+      p.count.bind(p)
+      return p
     }
 
     if(i.value) {
