@@ -16,6 +16,10 @@
  * @returns {Mongoose.Query} find documents from mongodb according to query
  */
 const findByQuery = (model, query) => {
+  if (typeof query === "string") {
+    query = JSON.parse(query)
+  }
+
   if(query.length === 0) {
     return model.find({})
   }
