@@ -166,7 +166,7 @@ router.get("/material/:id/migrations", (req, res) => {
 // 移动物资到新位置
 router.post("/material/:id/migrations", (req, res) => {
   let id = req.params.id
-  let repository = req.body.repository
+  let repository_id = req.body.repository
   let location = req.body.location
   let layer = req.body.layer
   let destination = req.body.destination
@@ -243,7 +243,7 @@ router.post("/material/:id/migrations", (req, res) => {
             }
           })
         } else {
-          repository.findOne({ _id: ObjectId(repository) }, (err, docs) => {
+          repository.findOne({ _id: ObjectId(repository_id) }, (err, docs) => {
             if (err) {
               res.status(400).json({ error: err })
             } else {
@@ -286,7 +286,7 @@ router.post("/material/:id/migrations", (req, res) => {
                           doc.stored_count += 1
                           doc.locations[location].available_space -= 1
                           doc.locations[location].materials_num[layer] += 1
-                          repository.updateOne({ _id: ObjectId(repository) }, { $set: docs }, (err, raw) => {
+                          repository.updateOne({ _id: ObjectId(repository_id) }, { $set: docs }, (err, raw) => {
                             if (err) {
                               res.status(400).json({ error: err })
                             } else {
