@@ -1,4 +1,5 @@
 let express = require("express")
+let findHelp = require("../libs/find_helpers.js")
 let router = express.Router()
 exports.router = router
 exports.path = "/"
@@ -13,25 +14,9 @@ let mongoose = require("mongoose")
 let ObjectId = mongoose.Types.ObjectId
 
 router.head("/tasks", (req, res) => {
-    let others = req.query.others
-    others == null ? others = [] : others
-    let query = {}
-    for (let i in others) {
-        if (ohters[i].key && (typeof ohters[i].key === "string")) {
-            if (ohters[i].value) {
-                query[ohters[i].key] = ohters[i].value
-            } else {
-                if (ohters[i].region) {
-                    query[ohters[i].key] = ohters[i].region
-                } else {
-                    continue
-                }
-            }
-        } else {
-            continue
-        }
-    }
-    task.count(query, (err, num) => {
+    let others = JSON.parse(req.query.others)
+    others = findHelp.findByQuery(task, others)
+    others.count((err, num) => {
         if (err) {
             res.status(400).json({ error: JSON.stringify(err) })
         } else {
@@ -41,18 +26,23 @@ router.head("/tasks", (req, res) => {
 })
 
 router.get("/tasks", (req, res) => {
-    var page = parseInt(req.query.page)
-    var size = parseInt(req.query.limit)
-    var query = req.query.others
+    let page = parseInt(req.query.page)
+    let size = parseInt(req.query.limit)
+    let query = JSON.parse(req.query.others)
     if (query == null) {
         task.find({}, null, { limit: size, skip: size * page }, (err, docs) => {
             if (err) {
                 res.status(400).json({ error: JSON.stringify(err) })
             } else {
                 if (docs == null || docs.length < 1) {
-                    res.status(400).json({ error: "没有找到相关记录" })
+                    res.status(200).json([])
                 } else {
-                    res.status(200).json(docs)
+                    Promise.all(docs.map(d => d.combine_migration_or_error(true)))
+                        .then((result) => { res.status(200).json(resutl) })
+                        .catch((err) => {
+                            res.status(400).json({ error: JSON.stringify(err) })
+                        })
+
                 }
             }
         })
@@ -61,9 +51,11 @@ router.get("/tasks", (req, res) => {
         query = findHelp.slicePage(query, page, size)
         query.exec().then((result) => {
             if (result == null || result.length < 1) {
-                res.status(400).json({ error: "没有找到记录" })
+                res.status(200).json([])
             } else {
-                res.status(200).json(result)
+                return Promise
+                    .all(result.map(d => d.combine_migration_or_error(true)))
+                    .then((r) => { res.status(200).json(r) })
             }
         }).catch((err) => {
             res.status(400).json({ error: JSON.stringify(err) })

@@ -22,10 +22,7 @@ let exportinfoSchema = Schema({
     type: String,
     default: ""
   },
-  from_repository: utils.IntRequired({
-    unique: true,
-    min: 1
-  })
+  from_repository: utils.IntRequired({ min: 1 })
 })
 
 module.exports = mongoose.model("Exportinfo", exportinfoSchema)

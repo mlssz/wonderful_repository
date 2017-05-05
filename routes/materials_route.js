@@ -167,9 +167,9 @@ router.get("/material/:id/migrations", (req, res) => {
 // 移动物资到新位置
 router.post("/material/:id/migrations", (req, res) => {
   let id = req.params.id
-  let repository_id = req.body.repository
-  let location = req.body.location
-  let layer = req.body.layer
+  let repository_id = parseInt(req.body.repository)
+  let location = parseInt(req.body.location)
+  let layer = parseInt(req.body.layer)
   let destination = req.body.destination
 
   materials.findOne({ _id: ObjectId(id) }, (err, doc) => {
@@ -179,16 +179,16 @@ router.post("/material/:id/migrations", (req, res) => {
       if (doc == null) {
         res.status(400).json({ error: "该物品不存在" })
       } else {
-        if (repository == -1) {
+        if (repository_id == -1) {
           let mi = {
-            material: Objectid(id),
+            material: ObjectId(id),
             date: 0,
             from_repository: doc.repository_id,
             from_location: doc.location_id,
             from_layer: doc.layer,
             to_repository: -1,
-            to_location: -1,
-            to_layer: -1
+            to_location: 0,
+            to_layer: 0
           }
           let ta = {
             action: 502,
@@ -197,12 +197,12 @@ router.post("/material/:id/migrations", (req, res) => {
             migration: null,
             error: null,
             publish_time: Date.now(),
-            start_time: 0,
-            end_time: 0,
+            start_time: null,
+            end_time: null,
             remark: null
           }
           let ei = {
-            actual_export_time: 0,
+            actual_export_time: Date.now(),
             material: ObjectId(id),
             destination: destination,
             from_repository: doc.repository_id
@@ -211,17 +211,17 @@ router.post("/material/:id/migrations", (req, res) => {
             if (err) {
               res.status(400).json({ error: err })
             } else {
-              mi = docs.toObject()[0]
+              mi = docs[0]
               if (mi == null) {
                 res.status(400).json({ error: "失败" })
               } else {
                 ta.migration = docs[0]._id
-                ta.insertMany([ta], (err, docs) => {
+                task.insertMany([ta], (err, docs) => {
                   if (err) {
                     res.status(400).json({ error: err })
                   } else {
                     if (docs[0] != null) {
-                      errorinfo.insertMany([ei], (err, docs) => {
+                      exportinfo.insertMany([ei], (err, docs) => {
                         if (err) {
                           res.status(400).json({ error: err })
                         } else {
@@ -229,22 +229,37 @@ router.post("/material/:id/migrations", (req, res) => {
                             mi.exportinfo = {
                               distination: destination
                             }
-                            res.status.json(mi)
+                            materials.updateOne({ _id: ObjectId(id) }, { status: 302 }, (err, raw) => {
+                              if (err) {
+                                res.status(400).json({ error: err })
+                              } else {
+                                if (raw.n == 1 && raw.nModified == 1 && raw.ok == 1)
+                                  res.status(200).json(mi)
+                                else
+                                  res.status(400).json({ error: "更新物品状态失败" })
+                              }
+                            })
                           } else {
                             res.status(400).json({ error: "失败" })
                           }
                         }
+                      }).catch((err) => {
+                        res.status(400).json({ error: err })
                       })
                     } else {
                       res.status(400).json({ error: "失败" })
                     }
                   }
+                }).catch((err) => {
+                  res.status(400).json({ error: err })
                 })
               }
             }
+          }).catch((err) => {
+            res.status(400).json({ error: err })
           })
         } else {
-          repository.findOne({ _id: ObjectId(repository_id) }, (err, docs) => {
+          repository.findOne({ id: repository_id }, (err, docs) => {
             if (err) {
               res.status(400).json({ error: err })
             } else {
@@ -252,12 +267,12 @@ router.post("/material/:id/migrations", (req, res) => {
                 docs = docs.toObject()
                 if (docs.locations[location].materials_num[layer] <= 20) {
                   let mi = {
-                    material: Objectid(id),
+                    material: ObjectId(id),
                     date: 0,
                     from_repository: doc.repository_id,
                     from_location: doc.location_id,
                     from_layer: doc.layer,
-                    to_repository: ObjectId(repository),
+                    to_repository: repository_id,
                     to_location: location,
                     to_layer: layer
                   }
@@ -272,29 +287,40 @@ router.post("/material/:id/migrations", (req, res) => {
                     end_time: 0,
                     remark: null
                   }
-                  migrations.insertMany([mi], (err, doc) => {
+                  migrations.insertMany([mi], (err, docm) => {
                     if (err) {
                       res.status(400).json({ error: err })
                     } else {
-                      doc = doc.toObject();
-                      doc = doc[0]
-                      ta.migration = doc._id
+                      docm = docm[0]
+                      ta.migration = docm._id
                       task.insertMany([ta], (err, doc) => {
                         if (err) {
                           res.status(400).json({ error: err })
                         } else {
-                          doc.available_space -= 1
-                          doc.stored_count += 1
-                          doc.locations[location].available_space -= 1
-                          doc.locations[location].materials_num[layer] += 1
-                          repository.updateOne({ _id: ObjectId(repository_id) }, { $set: docs }, (err, raw) => {
+                          docs.available_space -= 1
+                          docs.stored_count += 1
+                          docs.locations[location].available_space -= 1
+                          docs.locations[location].materials_num[layer] += 1
+                          repository.updateOne({ id: repository_id }, { $set: docs }, (err, raw) => {
                             if (err) {
                               res.status(400).json({ error: err })
                             } else {
                               if (raw.n == 1) {
                                 if (raw.nModified == 1) {
                                   if (raw.ok == 1) {
-                                    res.status(200).json({})
+                                    materials.updateOne({ _id: ObjectId(id) }, { status: 301 }, (err, raw) => {
+                                      if (err) {
+                                        res.status(400).json({ error: err })
+                                      } else {
+                                        docm.exportinfo = {
+                                          "distination": destination
+                                        }
+                                        if (raw.n == 1 && raw.nModified == 1 && raw.ok == 1)
+                                          res.status(200).json({ docm })
+                                        else
+                                          res.status(400).json({ error: "更新物品状态失败" })
+                                      }
+                                    })
                                   } else {
                                     res.status(400).json({ error: "记录修改失败" })
                                   }
@@ -317,6 +343,8 @@ router.post("/material/:id/migrations", (req, res) => {
                 } else {
                   res.status(400).json({ error: "该层已被放满" })
                 }
+              } else {
+                res.status(400).json({ error: "仓库不存在" })
               }
             }
           })
@@ -429,7 +457,7 @@ router.get("/materials", (req, res) => {
         res.status(400).json({ error: JSON.stringify(err) })
       } else {
         if (docs == null || docs.length < 1) {
-          res.status(400).json({ error: "没有找到相关记录" })
+          res.status(200).json([])
         } else {
           res.status(200).json(docs)
         }
@@ -440,7 +468,7 @@ router.get("/materials", (req, res) => {
     query = findHelp.slicePage(query, page, size)
     query.exec().then((result) => {
       if (result == null || result.length < 1) {
-        res.status(400).json({ error: "没有找到记录" })
+        res.status(200).json([])
       } else {
         res.status(200).json(result)
       }
