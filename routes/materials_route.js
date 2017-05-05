@@ -6,6 +6,7 @@ let task = require("../models/task")
 let repository = require("../models/repository")
 let errorinfo = require("../models/errorinfo")
 let exportinfo = require("../models/exportinfo")
+let findHelp = require("../libs/find_helpers.js")
 let mongoose = require("mongoose")
 let ObjectId = mongoose.Types.ObjectId
 exports.router = router
@@ -432,7 +433,7 @@ router.get("/materials", (req, res) => {
       }
     })
   } else {
-    query = findHelp.findByQuery(materials, query);
+    query = findHelp.findByQuery(materials, JSON.parse(query));
     query = findHelp.slicePage(query, page, size)
     query.exec().then((result) => {
       if (result == null || result.length < 1) {
