@@ -283,7 +283,7 @@ describe("Task", () => {
           migration: result[0]._id
           // result._id
         })
-      }).then(r => r.combine_material_or_error(true)).then(result => {
+      }).then(r => r.combine_migration_or_error(true)).then(result => {
         expect(result).to.have.property('material')
         expect(result).to.have.property('migration')
         expect(result).to.have.property('staff')

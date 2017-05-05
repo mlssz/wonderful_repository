@@ -16,6 +16,10 @@
  * @returns {Mongoose.Query} find documents from mongodb according to query
  */
 const findByQuery = (model, query) => {
+  if(query.length === 0) {
+    return model.find({})
+  }
+
   // First off, tanslate every items in query to condition element
   let conditions = {"$and":[]}
   let and = conditions["$and"]
@@ -47,6 +51,11 @@ const findByQuery = (model, query) => {
  */
 const slicePage = (Query, page, limit) => {
   if(page < 0 || limit <= 0) {
+    return Query
+  }
+
+  // Query is a Promise
+  if(Query.skip === undefined) {
     return Query
   }
 
