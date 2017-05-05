@@ -307,9 +307,12 @@ router.post("/material/:id/migrations", (req, res) => {
                             }
                           })
                         }
+                      }).catch((err) => {
+                        res.status(400).json({ error: err })
                       })
-
                     }
+                  }).catch((err) => {
+                    res.status(400).json({ error: err })
                   })
                 } else {
                   res.status(400).json({ error: "该层已被放满" })
