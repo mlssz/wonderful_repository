@@ -13,6 +13,24 @@ let staff = require("../models/staff")
 let mongoose = require("mongoose")
 let ObjectId = mongoose.Types.ObjectId
 
+router.get("/task/:id/", (req, res, next) => {
+  var id = req.params.id
+
+  return Promise.resolve()
+    .then(() => task.findOne({_id: ObjectId(id)}))
+    .then(doc => {
+      if (doc != null) {
+        return doc.combine_migration_or_error(true)
+          .then(r => res.json(r))
+      } else {
+        res.status(404).end()
+      }
+    })
+    .catch(err => {
+      res.status(404).end()
+    })
+})
+
 router.head("/tasks", (req, res) => {
     let others = JSON.parse(req.query.others)
     others = findHelp.findByQuery(task, others)
@@ -250,52 +268,25 @@ router.get("/staff/:sid/tasks", (req, res) => {
 
 router.get("/migration/:id/task", (req, res) => {
     let id = req.params.id
-    migration.findOne({ _id: ObjectId(id) }, (err, m) => {
-        if (err) {
-            res.status(400).json({ error: err })
-        } else {
-            if (m == null) {
-                res.status(400).json({ error: "找不到对象" })
-            } else {
-                m = m.toObject()
-                material.findOne({ _id: m.material }, (err, mm) => {
-                    if (err) {
-                        res.status(400).json({ error: err })
-                    } else {
-                        if (mm == null) {
-                            res.status(400).json({ error: "找不到对象" })
-                        } else {
-                            mm = mm.toObject()
-                            task.findOne({ migration: ObjectId(id) }, (err, t) => {
-                                if (err) {
-                                    res.status(400).json({ error: err })
-                                } else {
-                                    if (t == null) {
-                                        res.status(400).json({ error: "找不到对象" })
-                                    } else {
-                                        t = t.toObject()
-                                        staff.findOne({ _id: t.staff }, (err, s) => {
-                                            if (err) {
-                                                res.status(400).json({ error: err })
-                                            } else {
-                                                if (t == null) {
-                                                    res.status(400).json({ error: "找不到对象" })
-                                                } else {
-                                                    s = s.toObject()
-                                                    t.staff = s
-                                                    t.material = mm
-                                                    t.migration = m
-                                                    res.status(200).json(t)
-                                                }
-                                            }
-                                        })
-                                    }
-                                }
-                            })
-                        }
-                    }
-                })
-            }
-        }
+
+  return Promise.resolve()
+    .then(() => migration.findOne({_id: ObjectId(id)}))
+    .then(doc => {
+      if (doc != null) {
+        return task.findOne({ migration: ObjectId(id) })
+      } else {
+        throw "Not Found Migration"
+      }
+    })
+    .then(doc => {
+      if (doc != null) {
+        return doc.combine_migration_or_error(true)
+      } else {
+        throw "Not Found Task"
+      }
+    })
+    .then(r => res.json(r))
+    .catch(() => {
+      res.status(404).end()
     })
 })
