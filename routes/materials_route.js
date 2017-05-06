@@ -72,18 +72,49 @@ router.patch("/material/:id/", (req, res, next) => {
 /*删除特定物资*/
 router.delete("/material/:id", (req, res, next) => {
   var id = req.params.id
-  if (id !== null) {
-    materials.deleteOne({ _id: ObjectId(id) }, (err) => {
-      if (err) {
-        handleError(err)
-        res.status(400).json({ error: JSON.parse(err) })
-      } else {
-        res.status(200).json({})
-      }
+
+  return Promise.resolve()
+    .then(() => materials.findOne({_id: ObjectId(id)}))
+    .then((doc) => {
+      if (doc === null) return res.status(200).json({})
+
+      return materials
+        .deleteOne({ _id: ObjectId(id) })
+        .then(() => Promise.all([
+          migrations.find({material: ObjectId(id)}),
+          errorinfo.find({material: ObjectId(id)}),
+        ]))
+        .then((results) => {
+          return Promise.all([
+            migrations.deleteMany({material: ObjectId(id)}),
+            task.deleteMany({
+              $or: [
+                {migration: {$in: results[0].map(r => r._id)}},
+                {errorinfo: {$in: results[1].map(r => r._id)}},
+              ]}),
+            exportinfo.deleteMany({material: ObjectId(id)}),
+            errorinfo.deleteMany({material: ObjectId(id)}),
+          ])
+        })
+        .then(() => repository.findOne({id: doc.repository_id}))
+        .then((repo) => {
+          if (repo === null) return
+
+          let lid = doc.location_id - 1
+          let yid = doc.layer
+
+          return repo.update({$inc: {
+            "available_space": 1,
+            "stored_count": -1,
+            [`locations.${lid}.available_space`]: 1,
+            [`locations.${lid}.materials_num.${yid}`]: -1}})
+        })
+        .then(() => res.status(200).json({}))
+        .catch((err)=> res.status(400).json({ error: JSON.parse(err) }))
     })
-  } else {
-    res.status(404).end()
-  }
+    .catch(() => {
+        res.status(404).end()
+    })
 })
 
 /*查看一个物品的移动记录*/

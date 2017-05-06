@@ -81,11 +81,6 @@ router.get("/tasks", (req, res) => {
     }
 })
 
-function combineTasks(task) {
-    let _id = task._id
-
-}
-
 router.post("/tasks", (req, res) => {
     let account = req.body.account
     staff.findOne({ account: account }, (err, doc) => {
