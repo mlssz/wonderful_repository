@@ -26,22 +26,19 @@ router.get("/material/migrations", (req, res) => {
 /*获取一个特定的物资的基本详细信息*/
 router.get("/material/:id/", (req, res, next) => {
   var id = req.params.id
-  if (id !== null) {
-    materials.findOne({ _id: id }, (err, doc) => {
-      if (err) {
-        console.log(err)
-        res.status(400).end({ error: "数据库发生错误" })
+
+  return Promise.resolve()
+    .then(() => materials.findOne({_id: ObjectId(id)}))
+    .then(doc => {
+      if (doc != null) {
+        res.json(doc)
       } else {
-        if (doc != null) {
-          res.json(doc)
-        } else {
-          res.status(404).end();
-        }
+        res.status(404).end()
       }
     })
-  } else {
-    res.status(404).end()
-  }
+    .catch(() => {
+      res.status(404).end()
+    })
 })
 /*修改物资的部分信息*/
 router.patch("/material/:id/", (req, res, next) => {
