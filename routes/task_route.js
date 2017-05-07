@@ -21,7 +21,7 @@ router.get("/task/:id/", (req, res, next) => {
         .then(doc => {
             if (doc != null) {
                 return doc.combine_migration_or_error(true)
-                    .then(r => res.json(r))
+                .then(r => res.json(r.filter(t => t)))
             } else {
                 res.status(404).end()
             }
@@ -57,7 +57,7 @@ router.get("/tasks", (req, res) => {
     .then(ts => {
       return Promise.all(ts.map(t => t.combine_migration_or_error()))
     })
-    .then(ts => res.status(200).json(ts))
+    .then(ts => res.status(200).json(ts.filter(t => t)))
     .catch(err => res.status(400).json({error: JSON.stringify(err)}))
 })
 
@@ -240,7 +240,7 @@ router.get("/staff/:sid/tasks", (req, res) => {
         .then(ts => {
           return Promise.all(ts.map(t => t.combine_migration_or_error()))
         })
-        .then(ts => res.status(200).json(ts))
+        .then(ts => res.status(200).json(ts.filter(t => t)))
         .catch(err => res.status(400).json({error: JSON.stringify(err)}))
     })
     .catch(() => res.status(404).end())
@@ -265,7 +265,7 @@ router.get("/migration/:id/task", (req, res) => {
                 throw "Not Found Task"
             }
         })
-        .then(r => res.json(r))
+        .then(r => res.json(r.filter(t => t)))
         .catch(() => {
             res.status(404).end()
         })

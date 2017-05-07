@@ -64,6 +64,10 @@ taskSchema.methods.combine_migration_or_error = function(with_staff=false) {
       v.staff = s.toJSON()
       return v
     }))
+    .catch(err => {
+      console.error(err)
+      return undefined
+    })
 }
 taskSchema.methods._combine_migration = task => {
   // find migration
