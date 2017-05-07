@@ -44,41 +44,21 @@ router.head("/tasks", (req, res) => {
 })
 
 router.get("/tasks", (req, res) => {
-    let page = parseInt(req.query.page)
-    let size = parseInt(req.query.limit)
-    let query = JSON.parse(req.query.others)
-    if (query == null) {
-        task.find({}, null, { limit: size, skip: size * page }, (err, docs) => {
-            if (err) {
-                res.status(400).json({ error: JSON.stringify(err) })
-            } else {
-                if (docs == null || docs.length < 1) {
-                    res.status(200).json([])
-                } else {
-                    Promise.all(docs.map(d => d.combine_migration_or_error(true)))
-                        .then((result) => { res.status(200).json(result) })
-                        .catch((err) => {
-                            res.status(400).json({ error: JSON.stringify(err) })
-                        })
+  let page = req.query.page ? parseInt(req.query.page) : 0
+  let size = req.query.limit ? parseInt(req.query.limit) : 10
+  let others = req.query.others ? req.query.others : []
+  return Promise.resolve()
+    .then(() => {
+      let query = findHelp.findByQuery(task, others)
+      query = findHelp.slicePage(page, size)
 
-                }
-            }
-        })
-    } else {
-        query = findHelp.findByQuery(task, query);
-        query = findHelp.slicePage(query, page, size)
-        query.exec().then((result) => {
-            if (result == null || result.length < 1) {
-                res.status(200).json([])
-            } else {
-                return Promise
-                    .all(result.map(d => d.combine_migration_or_error(true)))
-                    .then((r) => { res.status(200).json(r) })
-            }
-        }).catch((err) => {
-            res.status(400).json({ error: JSON.stringify(err) })
-        })
-    }
+      return query
+    })
+    .then(ts => {
+      return Promise.all(ts.map(t => t.combine_migration_or_error()))
+    })
+    .then(ts => res.status(200).json(ts))
+    .catch(err => res.status(400).json({error: JSON.stringify(err)}))
 })
 
 router.post("/tasks", (req, res) => {
@@ -236,29 +216,34 @@ router.head("/staff/:sid/tasks", (req, res) => {
 })
 
 router.get("/staff/:sid/tasks", (req, res) => {
-    let sid = req.params.sid
-    let page = parseInt(req.query.page)
-    let size = parseInt(req.query.limit)
-    let others = req.query.others
-    let query = { staff: ObjectId(sid) }
-    for (let i in others) {
-        if (ohters[i].key && (typeof ohters[i].key === "string")) {
-            if (ohters[i].value) {
-                query[ohters[i].key] = ohters[i].value
-            } else {
-                if (ohters[i].region) {
-                    query[ohters[i].key] = ohters[i].region
-                } else {
-                    continue
-                }
-            }
-        } else {
-            continue
-        }
-    }
-    task.aggregate(
+  let sid = req.params.sid
+  let page = req.query.page ? parseInt(req.query.page) : 0
+  let size = req.query.limit ? parseInt(req.query.limit) : 10
+  let others = req.query.others ? req.query.others : []
 
-    )
+  return Promise.resolve()
+    .then(() => staff.findOne({_id: ObjectId(sid)}))
+    .then((s) => {
+      if(s === null ) return res.status(404).end()
+
+      others.push({
+        staff: ObjectId(sid)
+      })
+
+      return Promise.resolve()
+        .then(() => {
+          let query = findHelp.findByQuery(task, others)
+          query = findHelp.slicePage(page, size)
+
+          return query
+        })
+        .then(ts => {
+          return Promise.all(ts.map(t => t.combine_migration_or_error()))
+        })
+        .then(ts => res.status(200).json(ts))
+        .catch(err => res.status(400).json({error: JSON.stringify(err)}))
+    })
+    .catch(() => res.status(404).end())
 })
 
 router.get("/migration/:id/task", (req, res) => {
