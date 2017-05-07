@@ -44,41 +44,22 @@ router.head("/tasks", (req, res) => {
 })
 
 router.get("/tasks", (req, res) => {
-    let page = parseInt(req.query.page)
-    let size = parseInt(req.query.limit)
-    let query = JSON.parse(req.query.others)
-    if (query == null) {
-        task.find({}, null, { limit: size, skip: size * page }, (err, docs) => {
-            if (err) {
-                res.status(400).json({ error: JSON.stringify(err) })
-            } else {
-                if (docs == null || docs.length < 1) {
-                    res.status(200).json([])
-                } else {
-                    Promise.all(docs.map(d => d.combine_migration_or_error(true)))
-                        .then((result) => { res.status(200).json(resutl) })
-                        .catch((err) => {
-                            res.status(400).json({ error: JSON.stringify(err) })
-                        })
+  let page = req.query.page ? parseInt(req.query.page) : 0
+  let size = req.query.limit ? parseInt(req.query.limit) : 10
+  let others = req.query.others ? req.query.others : []
 
-                }
-            }
-        })
-    } else {
-        query = findHelp.findByQuery(task, query);
-        query = findHelp.slicePage(query, page, size)
-        query.exec().then((result) => {
-            if (result == null || result.length < 1) {
-                res.status(200).json([])
-            } else {
-                return Promise
-                    .all(result.map(d => d.combine_migration_or_error(true)))
-                    .then((r) => { res.status(200).json(r) })
-            }
-        }).catch((err) => {
-            res.status(400).json({ error: JSON.stringify(err) })
-        })
-    }
+  return Promise.resolve()
+    .then(() => {
+      let query = findHelp.findByQuery(task, others)
+      query = findHelp.slicePage(page, size)
+
+      return query
+    })
+    .then(ts => {
+      return Promise.all(ts.map(t => t.combine_migration_or_error()))
+    })
+    .then(ts => res.status(200).json(ts))
+    .catch(err => res.status(400).json({error: JSON.stringify(err)}))
 })
 
 router.post("/tasks", (req, res) => {
