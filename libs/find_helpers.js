@@ -19,30 +19,29 @@ const findByQuery = (model, query) => {
   if (typeof query === "string") {
     query = JSON.parse(query)
   }
-
-  if(query.length === 0) {
+  if (query.length < 1) {
     return model.find({})
   }
 
   // First off, tanslate every items in query to condition element
-  let conditions = {"$and":[]}
+  let conditions = { "$and": [] }
   let and = conditions["$and"]
-  for(let i of query) {
-    if(i.key === undefined) {
+  for (let i of query) {
+    if (i.key === undefined) {
       let p = Promise.reject("Invalid Query Item: key should be a string.")
-      p.exec = function() {return this}
+      p.exec = function () { return this }
       p.exec.bind(p)
-      p.count = function() {return this}
+      p.count = function () { return this }
       p.count.bind(p)
       return p
     }
 
-    if(i.value) {
-      let elem = i.value instanceof Array ? {"$in": i.value} : i.value
-      and.push({[i.key]: elem})
+    if (i.value) {
+      let elem = i.value instanceof Array ? { "$in": i.value } : i.value
+      and.push({ [i.key]: elem })
     }
-    if(i.region && i.region.length >= 2) {
-      and.push({[i.key]: {"$gte": i.region[0], "$lt": i.region[1]}})
+    if (i.region && i.region.length >= 2) {
+      and.push({ [i.key]: { "$gte": i.region[0], "$lt": i.region[1] } })
     }
   }
 
@@ -59,16 +58,16 @@ const findByQuery = (model, query) => {
  * @returns {Mongoose.Model} the same as parameter query
  */
 const slicePage = (Query, page, limit) => {
-  if(page < 0 || limit <= 0) {
+  if (page < 0 || limit <= 0) {
     return Query
   }
 
   // Query is a Promise
-  if(Query.skip === undefined) {
+  if (Query.skip === undefined) {
     return Query
   }
 
-  return Query.skip(page*limit).limit(limit)
+  return Query.skip(page * limit).limit(limit)
 }
 
 module.exports = {
