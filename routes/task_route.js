@@ -14,21 +14,21 @@ let mongoose = require("mongoose")
 let ObjectId = mongoose.Types.ObjectId
 
 router.get("/task/:id/", (req, res, next) => {
-  var id = req.params.id
+    var id = req.params.id
 
-  return Promise.resolve()
-    .then(() => task.findOne({_id: ObjectId(id)}))
-    .then(doc => {
-      if (doc != null) {
-        return doc.combine_migration_or_error(true)
-          .then(r => res.json(r))
-      } else {
-        res.status(404).end()
-      }
-    })
-    .catch(err => {
-      res.status(404).end()
-    })
+    return Promise.resolve()
+        .then(() => task.findOne({ _id: ObjectId(id) }))
+        .then(doc => {
+            if (doc != null) {
+                return doc.combine_migration_or_error(true)
+                    .then(r => res.json(r))
+            } else {
+                res.status(404).end()
+            }
+        })
+        .catch(err => {
+            res.status(404).end()
+        })
 })
 
 router.head("/tasks", (req, res) => {
@@ -56,7 +56,7 @@ router.get("/tasks", (req, res) => {
                     res.status(200).json([])
                 } else {
                     Promise.all(docs.map(d => d.combine_migration_or_error(true)))
-                        .then((result) => { res.status(200).json(resutl) })
+                        .then((result) => { res.status(200).json(result) })
                         .catch((err) => {
                             res.status(400).json({ error: JSON.stringify(err) })
                         })
@@ -264,24 +264,147 @@ router.get("/staff/:sid/tasks", (req, res) => {
 router.get("/migration/:id/task", (req, res) => {
     let id = req.params.id
 
-  return Promise.resolve()
-    .then(() => migration.findOne({_id: ObjectId(id)}))
-    .then(doc => {
-      if (doc != null) {
-        return task.findOne({ migration: ObjectId(id) })
-      } else {
-        throw "Not Found Migration"
-      }
-    })
-    .then(doc => {
-      if (doc != null) {
-        return doc.combine_migration_or_error(true)
-      } else {
-        throw "Not Found Task"
-      }
-    })
-    .then(r => res.json(r))
-    .catch(() => {
-      res.status(404).end()
+    return Promise.resolve()
+        .then(() => migration.findOne({ _id: ObjectId(id) }))
+        .then(doc => {
+            if (doc != null) {
+                return task.findOne({ migration: ObjectId(id) })
+            } else {
+                throw "Not Found Migration"
+            }
+        })
+        .then(doc => {
+            if (doc != null) {
+                return doc.combine_migration_or_error(true)
+            } else {
+                throw "Not Found Task"
+            }
+        })
+        .then(r => res.json(r))
+        .catch(() => {
+            res.status(404).end()
+        })
+})
+
+router.post("/staff/:sid/tasks", (req, res) => {
+    let sid = req.params.sid
+    let action = req.body.action
+    let maxtask = 10
+    let query = {
+        staff: null,
+        status: 0
+    }
+    if (action) {
+        action = parseInt(req.body.action)
+        if (action < 600) {
+            query["action"] = action
+        } else {
+            query["action"] = { $gte: 600 }
+        }
+    }
+    task.count({ staff: ObjectId(sid), status: { $lt: 2 } }, (err, count) => {
+        if (err) {
+            res.status(400).json({ error: err })
+        } else {
+            if ((maxtask - count) > 0) {
+                task.find(query, null, { limit: (maxtask - count) }, (err, ts) => {
+                    if (err) {
+                        res.status(400).json({ error: err })
+                    } else {
+                        // res.status(200).json(tsid)
+                        let miid = []
+                        let eiid = []
+                        let taid = []
+                        let maid = []
+                        let tsobj = []
+                        for (let i in ts) {
+                            tsobj.push(ts[i].toObject())
+                            taid.push(ts[i]._id)
+                            if (ts[i].migration) {
+                                miid.push(ts[i].migration)
+                            } else if (ts[i].error) {
+                                eiid.push(error)
+                            } else { }
+                        }
+                        let p = new Promise((resolve, reject) => {
+                            // migration.find({_id:{$in:miid}},(err, miobj)=>{})
+                            task.update({ _id: { $in: taid } }, { staff: ObjectId(sid) }, (err, raw) => {
+                                if (err) {
+                                    res.status(400).json({ error: err })
+                                } else {
+                                    resolve()
+                                }
+                            })
+                        })
+                        p.then(() => {
+                            return new Promise((resolve, reject) => {
+                                migration.find({ _id: { $in: miid } }, (err, obj) => {
+                                    if (err) {
+                                        resolve(err)
+                                    } else {
+                                        for (let i in obj) {
+                                            for (let j in ts) {
+                                                if ((ts[j].migration + '') == (obj[i]._id + '')) {
+                                                    tsobj[j].migration = obj[j]
+                                                    break;
+                                                }
+                                            }
+                                            maid.push(obj[i].material)
+                                        }
+                                        resolve()
+                                    }
+                                })
+                            })
+                        }).then(() => {
+                            return new Promise((resolve, reject) => {
+                                errorinfo.find({ _id: { $in: eiid } }, (err, obj) => {
+                                    if (err) {
+                                        resolve(err)
+                                    } else {
+                                        for (let i in obj) {
+                                            for (let j in ts) {
+                                                if ((ts[j].errorinfo + '') == (obj[i]._id + '')) {
+                                                    tsobj[j].errorinfo = obj[j]
+                                                    break;
+                                                }
+                                            }
+                                            maid.push(obj[i].material)
+                                        }
+                                        resolve()
+                                    }
+                                })
+                            })
+                        }).then(() => {
+                            material.find({ _id: { $in: maid } }, (err, obj) => {
+                                if (err) {
+                                    resolve(err)
+                                } else {
+                                    for (let i in obj) {
+                                        for (let j in tsobj) {
+                                            if (ts[j].migration) {
+                                                if ((tsobj[j].migration.material + '') == (obj[i]._id + '')) {
+                                                    tsobj[j].material = obj[i].toObject()
+                                                    break
+                                                }
+                                            } else {
+                                                if ((tsobj[j].errorinfo.material + '') == (obj[i]._id + '')) {
+                                                    tsobj[j].material = obj[i].toObject()
+                                                    break
+                                                }
+                                            }
+                                        }
+                                    }
+                                    res.status(200).json(tsobj)
+                                }
+                            })
+                        }).catch((err) => {
+                            res.status(400).json({ error: err })
+                        })
+                    }
+                })
+            } else {
+                res.status(400).json({ error: "最大任务数量：" + maxtask + "个" })
+            }
+        }
     })
 })

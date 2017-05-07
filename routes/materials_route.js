@@ -28,7 +28,7 @@ router.get("/material/:id/", (req, res, next) => {
   var id = req.params.id
 
   return Promise.resolve()
-    .then(() => materials.findOne({_id: ObjectId(id)}))
+    .then(() => materials.findOne({ _id: ObjectId(id) }))
     .then(doc => {
       if (doc != null) {
         res.json(doc)
@@ -74,46 +74,50 @@ router.delete("/material/:id", (req, res, next) => {
   var id = req.params.id
 
   return Promise.resolve()
-    .then(() => materials.findOne({_id: ObjectId(id)}))
+    .then(() => materials.findOne({ _id: ObjectId(id) }))
     .then((doc) => {
       if (doc === null) return res.status(200).json({})
 
       return materials
         .deleteOne({ _id: ObjectId(id) })
         .then(() => Promise.all([
-          migrations.find({material: ObjectId(id)}),
-          errorinfo.find({material: ObjectId(id)}),
+          migrations.find({ material: ObjectId(id) }),
+          errorinfo.find({ material: ObjectId(id) }),
         ]))
         .then((results) => {
           return Promise.all([
-            migrations.deleteMany({material: ObjectId(id)}),
+            migrations.deleteMany({ material: ObjectId(id) }),
             task.deleteMany({
               $or: [
-                {migration: {$in: results[0].map(r => r._id)}},
-                {errorinfo: {$in: results[1].map(r => r._id)}},
-              ]}),
-            exportinfo.deleteMany({material: ObjectId(id)}),
-            errorinfo.deleteMany({material: ObjectId(id)}),
+                { migration: { $in: results[0].map(r => r._id) } },
+                { errorinfo: { $in: results[1].map(r => r._id) } },
+              ]
+            }),
+            exportinfo.deleteMany({ material: ObjectId(id) }),
+            errorinfo.deleteMany({ material: ObjectId(id) }),
           ])
         })
-        .then(() => repository.findOne({id: doc.repository_id}))
+        .then(() => repository.findOne({ id: doc.repository_id }))
         .then((repo) => {
           if (repo === null) return
 
           let lid = doc.location_id - 1
           let yid = doc.layer
 
-          return repo.update({$inc: {
-            "available_space": 1,
-            "stored_count": -1,
-            [`locations.${lid}.available_space`]: 1,
-            [`locations.${lid}.materials_num.${yid}`]: -1}})
+          return repo.update({
+            $inc: {
+              "available_space": 1,
+              "stored_count": -1,
+              [`locations.${lid}.available_space`]: 1,
+              [`locations.${lid}.materials_num.${yid}`]: -1
+            }
+          })
         })
         .then(() => res.status(200).json({}))
-        .catch((err)=> res.status(400).json({ error: JSON.parse(err) }))
+        .catch((err) => res.status(400).json({ error: JSON.parse(err) }))
     })
     .catch(() => {
-        res.status(404).end()
+      res.status(404).end()
     })
 })
 
@@ -437,11 +441,60 @@ router.post("/materials", (req, res) => {
                     }
                     ms.push(m)
                   }
-                  materials.insertMany(ms, (err, docs) => {
+                  materials.insertMany(ms, (err, mater) => {
                     if (err) {
                       res.status(400).json({ error: err })
                     } else {
-                      res.status(201).json(docs)
+                      let p = new Promise((resolve, reject) => {
+                        let mi = []
+                        for (let i = 0; i < num; i++) {
+                          mi.push(
+                            {
+                              material: mater[i]._id,
+                              date: null,
+                              from_repository: 0,
+                              from_location: 0,
+                              from_layer: 0,
+                              to_repository: repository_id,
+                              to_location: location_id,
+                              to_layer: layer
+                            }
+                          )
+                        }
+
+                        migrations.insertMany(mi, (err, migra) => {
+                          if (err) {
+                            reject(err)
+                          } else {
+                            resolve(migra)
+                          }
+                        }).catch((err) => {
+                          res.status(400).json({ error: err })
+                        })
+                      })
+                      p.then((migra) => {
+                        let ta = []
+                        for (let k = 0; k < migra.length; k++) {
+                          ta.push({
+                            action: 500,
+                            staff: null,
+                            status: 0,
+                            migration: migra[k]._id,
+                            error: null,
+                            publish_time: Date.now(),
+                            start_time: null,
+                            end_time: null,
+                            remark: null
+                          })
+                        }
+                        task.insertMany(ta, (err, doc) => {
+                          if (err) {
+                            res.status(400).json({ error: err })
+                          } else {
+                            res.status(201).json(mater)
+                          }
+                        })
+                      })
                     }
                   }).catch((err) => {
                     console.log(err)
