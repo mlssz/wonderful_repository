@@ -44,21 +44,23 @@ router.head("/tasks", (req, res) => {
 })
 
 router.get("/tasks", (req, res) => {
-  let page = req.query.page ? parseInt(req.query.page) : 0
-  let size = req.query.limit ? parseInt(req.query.limit) : 10
-  let others = req.query.others ? req.query.others : []
-  return Promise.resolve()
-    .then(() => {
-      let query = findHelp.findByQuery(task, others)
-      query = findHelp.slicePage(page, size)
-
-      return query
-    })
-    .then(ts => {
-      return Promise.all(ts.map(t => t.combine_migration_or_error()))
-    })
-    .then(ts => res.status(200).json(ts))
-    .catch(err => res.status(400).json({error: JSON.stringify(err)}))
+    let page = req.query.page ? parseInt(req.query.page) : 0
+    let size = req.query.limit ? parseInt(req.query.limit) : 10
+    let others = req.query.others ? JSON.parse(req.query.others) : []
+    return Promise.resolve()
+        .then(() => {
+            let query = findHelp.findByQuery(task, others)
+            query = findHelp.slicePage(query, page, size)
+            return query
+        })
+        .then(ts => {
+            return Promise.all(ts.map(t => t.combine_migration_or_error()))
+        })
+        .then(ts => res.status(200).json(ts))
+        .catch(err => {
+            console.log(err)
+            res.status(400).json({ error: JSON.stringify(err) })
+        })
 })
 
 router.post("/tasks", (req, res) => {
@@ -216,34 +218,33 @@ router.head("/staff/:sid/tasks", (req, res) => {
 })
 
 router.get("/staff/:sid/tasks", (req, res) => {
-  let sid = req.params.sid
-  let page = req.query.page ? parseInt(req.query.page) : 0
-  let size = req.query.limit ? parseInt(req.query.limit) : 10
-  let others = req.query.others ? req.query.others : []
+    let sid = req.params.sid
+    let page = req.query.page ? parseInt(req.query.page) : 0
+    let size = req.query.limit ? parseInt(req.query.limit) : 10
+    let others = req.query.others ? req.query.others : []
 
-  return Promise.resolve()
-    .then(() => staff.findOne({_id: ObjectId(sid)}))
-    .then((s) => {
-      if(s === null ) return res.status(404).end()
-
-      others.push({
-        staff: ObjectId(sid)
-      })
-
-      return Promise.resolve()
-        .then(() => {
-          let query = findHelp.findByQuery(task, others)
-          query = findHelp.slicePage(page, size)
-
-          return query
+    return Promise.resolve()
+        .then(() => staff.findOne({ _id: ObjectId(sid) }))
+        .then((s) => {
+            if (s === null) return res.status(404).end("没有该职员")
+            others.push({
+                key: "staff",
+                value: ObjectId(sid)
+            })
+            
+            return Promise.resolve()
+                .then(() => {
+                    let query = findHelp.findByQuery(task, others)
+                    query = findHelp.slicePage(query, page, size)
+                    return query
+                })
+                .then(ts => {
+                    return Promise.all(ts.map(t => t.combine_migration_or_error()))
+                })
+                .then(ts => res.status(200).json(ts))
+                .catch(err => res.status(400).json({ error: JSON.stringify(err) }))
         })
-        .then(ts => {
-          return Promise.all(ts.map(t => t.combine_migration_or_error()))
-        })
-        .then(ts => res.status(200).json(ts))
-        .catch(err => res.status(400).json({error: JSON.stringify(err)}))
-    })
-    .catch(() => res.status(404).end())
+        .catch(() => res.status(404).end())
 })
 
 router.get("/migration/:id/task", (req, res) => {
@@ -331,6 +332,27 @@ router.post("/staff/:sid/tasks", (req, res) => {
                                             for (let j in ts) {
                                                 if ((ts[j].migration + '') == (obj[i]._id + '')) {
                                                     tsobj[j].migration = obj[j]
+                                                    let code = 100
+                                                    switch (ts[j].action) {
+                                                        case 500:
+                                                            code = 200
+                                                            break
+                                                        case 501:
+                                                            code = 201
+                                                            break
+                                                        case 502:
+                                                            code = 202
+                                                            break
+                                                        case 601:
+                                                            code = 303
+                                                            break
+                                                        case 602:
+                                                            code = 400
+                                                            break
+                                                        default:
+                                                            code = 100
+                                                    }
+                                                    material.update({ _id: obj[i].material }, { status: code }, (err, r) => { })
                                                     break;
                                                 }
                                             }
@@ -350,6 +372,27 @@ router.post("/staff/:sid/tasks", (req, res) => {
                                             for (let j in ts) {
                                                 if ((ts[j].errorinfo + '') == (obj[i]._id + '')) {
                                                     tsobj[j].errorinfo = obj[j]
+                                                    let code = 100
+                                                    switch (ts[j].action) {
+                                                        case 500:
+                                                            code = 200
+                                                            break
+                                                        case 501:
+                                                            code = 201
+                                                            break
+                                                        case 502:
+                                                            code = 202
+                                                            break
+                                                        case 601:
+                                                            code = 303
+                                                            break
+                                                        case 602:
+                                                            code = 400
+                                                            break
+                                                        default:
+                                                            code = 100
+                                                    }
+                                                    material.update({ _id: obj[i].material }, { status: code }, (err, r) => { })
                                                     break;
                                                 }
                                             }
