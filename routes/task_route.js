@@ -236,29 +236,34 @@ router.head("/staff/:sid/tasks", (req, res) => {
 })
 
 router.get("/staff/:sid/tasks", (req, res) => {
-    let sid = req.params.sid
-    let page = parseInt(req.query.page)
-    let size = parseInt(req.query.limit)
-    let others = req.query.others
-    let query = { staff: ObjectId(sid) }
-    for (let i in others) {
-        if (ohters[i].key && (typeof ohters[i].key === "string")) {
-            if (ohters[i].value) {
-                query[ohters[i].key] = ohters[i].value
-            } else {
-                if (ohters[i].region) {
-                    query[ohters[i].key] = ohters[i].region
-                } else {
-                    continue
-                }
-            }
-        } else {
-            continue
-        }
-    }
-    task.aggregate(
+  let sid = req.params.sid
+  let page = req.query.page ? parseInt(req.query.page) : 0
+  let size = req.query.limit ? parseInt(req.query.limit) : 10
+  let others = req.query.others ? req.query.others : []
 
-    )
+  return Promise.resolve()
+    .then(() => staff.findOne({_id: ObjectId(sid)}))
+    .then((s) => {
+      if(s === null ) return res.status(404).end()
+
+      others.push({
+        staff: ObjectId(sid)
+      })
+
+      return Promise.resolve()
+        .then(() => {
+          let query = findHelp.findByQuery(task, others)
+          query = findHelp.slicePage(page, size)
+
+          return query
+        })
+        .then(ts => {
+          return Promise.all(ts.map(t => t.combine_migration_or_error()))
+        })
+        .then(ts => res.status(200).json(ts))
+        .catch(err => res.status(400).json({error: JSON.stringify(err)}))
+    })
+    .catch(() => res.status(404).end())
 })
 
 router.get("/migration/:id/task", (req, res) => {
