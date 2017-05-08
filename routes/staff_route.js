@@ -194,3 +194,19 @@ router.delete("/staffs", (req, res) => {
     }
   })
 })
+
+router.patch("/staffs/:id", (req, res) => {
+  let sid = req.query.id
+  let up = req.body
+  staff.updateOne({ _id: ObjectId(sid) }, up, (err, raw) => {
+    if (err) {
+      res.status(400).json({ error: err })
+    } else {
+      if (raw.ok === 1) {
+        res.status(200).json({})
+      } else {
+        res.status(400).json({ error: "修改失败" })
+      }
+    }
+  })
+})

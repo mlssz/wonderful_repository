@@ -204,12 +204,14 @@ let finishtask = (tk, repo, loac) => {
                         let code = 100
                         if (tk.status == 502) code = 101
                         upma = {
-                            status: code
+                            status: code,
+                            location_update_time:Date.now()
                         }
                         if (tk.status >= 501 && tk.status < 600) {
                             upma["repository_id"] = tk.migration.to_repository
                             upma["location_id"] = tk.migration.to_location
                             upma["layer"] = tk.migration.to_layer
+                            upma["last_migration"] = tk.migration._id
                         }
                         material.updateOne({ _id: tk.material._id }, upma, (err, raw) => {
                             if (err) { reject(err) }
