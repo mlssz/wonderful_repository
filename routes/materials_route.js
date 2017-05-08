@@ -49,18 +49,10 @@ router.patch("/material/:id/", (req, res, next) => {
         handleError(err)
         res.status(400).json({ error: err });
       } else {
-        if (raw.n == 1) {
-          if (raw.nModified == 1) {
-            if (raw.ok == 1) {
-              res.status(200).json({})
-            } else {
-              res.status(400).json({ error: "记录修改失败" })
-            }
-          } else {
-            res.status(400).json({ error: "修改的数据和之前一样" })
-          }
+        if (raw.ok == 1) {
+          res.status(200).json({})
         } else {
-          res.status(400).json({ error: "没有找到记录" })
+          res.status(400).json({ error: "记录修改失败" })
         }
       }
     })
@@ -337,30 +329,22 @@ router.post("/material/:id/migrations", (req, res) => {
                             if (err) {
                               res.status(400).json({ error: err })
                             } else {
-                              if (raw.n == 1) {
-                                if (raw.nModified == 1) {
-                                  if (raw.ok == 1) {
-                                    materials.updateOne({ _id: ObjectId(id) }, { status: 301 }, (err, raw) => {
-                                      if (err) {
-                                        res.status(400).json({ error: err })
-                                      } else {
-                                        docm.exportinfo = {
-                                          "distination": destination
-                                        }
-                                        if (raw.n == 1 && raw.nModified == 1 && raw.ok == 1)
-                                          res.status(200).json({ docm })
-                                        else
-                                          res.status(400).json({ error: "更新物品状态失败" })
-                                      }
-                                    })
+                              if (raw.ok == 1) {
+                                materials.updateOne({ _id: ObjectId(id) }, { status: 301 }, (err, raw) => {
+                                  if (err) {
+                                    res.status(400).json({ error: err })
                                   } else {
-                                    res.status(400).json({ error: "记录修改失败" })
+                                    docm.exportinfo = {
+                                      "distination": destination
+                                    }
+                                    if (raw.n == 1 && raw.nModified == 1 && raw.ok == 1)
+                                      res.status(200).json({ docm })
+                                    else
+                                      res.status(400).json({ error: "更新物品状态失败" })
                                   }
-                                } else {
-                                  res.status(400).json({ error: "修改的数据和之前一样" })
-                                }
+                                })
                               } else {
-                                res.status(400).json({ error: "没有找到记录" })
+                                res.status(400).json({ error: "记录修改失败" })
                               }
                             }
                           })
@@ -519,13 +503,15 @@ router.post("/materials", (req, res) => {
 })
 
 router.head("/materials", (req, res) => {
-  materials.count(null, (err, num) => {
+  let others = req.query.others ? JSON.parse(req.query.others) : []
+  others = findHelp.findByQuery(materials, others)
+  others.count((err, num) => {
     if (err) {
       res.status(400).json({ error: err })
     } else {
       res.status(200).append("num", num).end()
     }
-  })
+  }).catch((err) => { res.status(400).json({ error: err }) })
 })
 
 router.get("/materials", (req, res) => {
