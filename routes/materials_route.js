@@ -22,6 +22,23 @@ router.get("/material/migrations", (req, res) => {
     }
   })
 })
+/*根据id获取一个特定的物资的基本详细信息*/
+router.get("/material/id/:id/", (req, res, next) => {
+  var id = Number.parseInt(req.params.id)
+
+  return Promise.resolve()
+    .then(() => materials.findOne({ id: id }))
+    .then(doc => {
+      if (doc != null) {
+        res.json(doc)
+      } else {
+        res.status(404).end()
+      }
+    })
+    .catch(() => {
+      res.status(404).end()
+    })
+})
 
 /*获取一个特定的物资的基本详细信息*/
 router.get("/material/:id/", (req, res, next) => {
