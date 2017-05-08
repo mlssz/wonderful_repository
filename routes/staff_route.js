@@ -3,6 +3,7 @@ let router = express.Router()
 let mongoose = require("mongoose")
 let staff = require("../models/staff")
 let findHelp = require("../libs/find_helpers")
+let ObjectId = mongoose.Types.ObjectId
 exports.router = router
 exports.path = "/"
 
@@ -14,17 +15,19 @@ router.get("/repositories/:id/materials/", (req, res, next) => res.status(501).e
 
 router.get("/staff/:id", (req, res, next) => {
   var id = req.params.id;
-  staff.findOne({ _id: mongoose.Types.ObjectId(id) }, function (err, doc) {
-    if (err) {
-      res.status(400).json({ error: err })
-    } else {
-      if (doc == null) {
-        res.status(404).json()
+
+  return Promise.resolve()
+    .then(() => staff.findOne({ _id: ObjectId(id) }))
+    .then(doc => {
+      if (doc != null) {
+        return res.status(200).json(doc)
       } else {
-        res.status(200).json(doc)
+        res.status(404).end()
       }
-    }
-  })
+    })
+    .catch(err => {
+      res.status(404).end()
+    })
 })
 
 router.patch("/staff/:id", (req, res, next) => {

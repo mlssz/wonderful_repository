@@ -2,6 +2,7 @@ let express = require("express")
 let router = express.Router()
 exports.router = router
 exports.path = "/"
+let findHelp = require("../libs/find_helpers.js")
 let errorinfo = require("../models/errorinfo")
 let task = require("../models/task")
 
@@ -16,34 +17,20 @@ router.head("/errors", (req, res) => {
 })
 
 router.get("/errors", (req, res) => {
-    var page = parseInt(req.query.page)
-    var size = parseInt(req.query.limit)
-    var query = req.query.others
-    if (query == null) {
-        errorinfo.find({}, null, { limit: size, skip: size * page }, (err, docs) => {
-            if (err) {
-                res.status(400).json({ error: JSON.stringify(err) })
-            } else {
-                if (docs == null || docs.length < 1) {
-                    res.status(400).json({ error: "没有找到相关记录" })
-                } else {
-                    res.status(200).json(docs)
-                }
-            }
-        })
-    } else {
-        query = findHelp.findByQuery(errorinfo, query);
-        query = findHelp.slicePage(query, page, size)
-        query.exec().then((result) => {
-            if (result == null || result.length < 1) {
-                res.status(400).json({ error: "没有找到记录" })
-            } else {
-                res.status(200).json(result)
-            }
-        }).catch((err) => {
-            res.status(400).json({ error: JSON.stringify(err) })
-        })
-    }
+  let page = req.query.page ? parseInt(req.query.page) : 0
+  let size = req.query.limit ? parseInt(req.query.limit) : 10
+  let others = req.query.others ? JSON.parse(req.query.others) : []
+
+  return Promise.resolve()
+    .then(() => {
+      let query = findHelp.findByQuery(errorinfo, others)
+      query = findHelp.slicePage(query, page, size)
+      return query
+    })
+    .then(es => res.status(200).json(es))
+    .catch(err => {
+      res.status(400).json({ error: JSON.stringify(err) })
+    })
 })
 
 router.post("/errors", (req, res) => {

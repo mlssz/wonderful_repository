@@ -401,7 +401,7 @@ router.get("/migration/:id/task", (req, res) => {
                 throw "Not Found Task"
             }
         })
-        .then(r => res.json(r.filter(t => t)))
+        .then(r => res.json(r))
         .catch(() => {
             res.status(404).end()
         })
