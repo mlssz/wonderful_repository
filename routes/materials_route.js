@@ -161,34 +161,54 @@ router.get("/material/:id/migrations", (req, res) => {
 })
 
 /*取消移动物资*/
-router.get("/material/:id/migration/:mid", (req, res, next) => {
-  let maid = req.params.id;
-  let miid = req.params.mid;
-  if (maid == null || miid == null) {
-    res.status(400).json({ error: "参数不合要求" })
-  } else {
-    task.findOne({ migration: ObjectId(miid) }, (err, doc) => {
-      if (err) {
-        res.status(400).json({ error: err })
-      } else {
-        if (doc == null) {
-          res.status(400).json({ error: "没有相关记录" })
-        } else {
-          if (doc.status == 100) {
-            materials.updateOne({ _id: ObjectId(maid) }, { status: 100 }, (err, raw) => {
-              if (err) {
-                res.status(400).json({ error: err })
-              } else {
-                res.status(200).json({ raw: raw })
-              }
-            })
-          } else {
-            res.status(400).json({ error: "任务已经开始" })
+router.delete("/material/:id/migration/:mid", (req, res, next) => {
+  let id = req.params.id
+  let mid = req.params.mid
+
+  return Promise.resolve()
+    .then(() => Promise.all([
+      materials.findOne({ _id: ObjectId(id) }),
+      migrations.findOne({ _id: ObjectId(mid) }),
+    ]))
+    .then((docs) => {
+      let doc_material = docs[0]
+      let doc_migration = docs[1]
+      if (doc_migration === null || doc_material === null) return res.status(404).end()
+
+      return migrations
+        .deleteOne({ _id: doc_migration._id })
+        .then(() => task.findOne({migration: doc_migration._id}))
+        .then((doc_task) => {
+          if(doc_task === null) return
+
+          if(doc_task.status > 0) {
+            throw "The Status Of Task should be 0."
+          }else{
+            return task.deleteOne({migration: doc_migration._id})
           }
-        }
-      }
+        })
+        .then(() => repository.findOne({ id: doc_migration.to_repository }))
+        .then((repo) => {
+          if (repo === null) return
+
+          let lid = doc_migration.to_location - 1
+          let yid = doc_migration.to_layer
+
+          return repo.update({
+            $inc: {
+              "available_space": 1,
+              "stored_count": -1,
+              [`locations.${lid}.available_space`]: 1,
+              [`locations.${lid}.materials_num.${yid}`]: -1
+            }
+          })
+        })
+        .then(() => res.status(200).json({}))
+        .catch((err) => res.status(400).json({ error: JSON.parse(err) }))
     })
-  }
+    .catch(() => {
+      res.status(404).end()
+    })
 })
 
 // 查看一个物品的移动记录
