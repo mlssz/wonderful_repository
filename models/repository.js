@@ -37,6 +37,9 @@ let repoSchema = Schema({
       type: String,
       required: "{PATH} is required!"
     },
+    place: utils.IntRequired({
+      min: 1
+    }),
     available_space: utils.IntRequired({
       default: 60,
       min: 0
