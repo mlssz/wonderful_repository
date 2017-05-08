@@ -12,8 +12,20 @@ let exportinfo = require("../models/exportinfo")
 let staff = require("../models/staff")
 let mongoose = require("mongoose")
 let ObjectId = mongoose.Types.ObjectId
+let initdb = require("../script/dbinit")
 
-router.get("/task/:id/", (req, res, next) => {
+router.get("/initdb", (req, res) => {
+    initdb.initdatabase((err) => {
+        if (err) {
+            res.status(400).json({ error: err })
+        } else {
+            res.status(200).json({ msg: "成功" })
+        }
+    })
+})
+
+
+router.get("/task/:id", (req, res, next) => {
     var id = req.params.id
 
     return Promise.resolve()
@@ -21,13 +33,15 @@ router.get("/task/:id/", (req, res, next) => {
         .then(doc => {
             if (doc != null) {
                 return doc.combine_migration_or_error(true)
-                .then(r => res.json(r.filter(t => t)))
+                    .then(r => {
+                        res.json(r)
+                    })
             } else {
-                res.status(404).end()
+                res.status(404).end("null")
             }
         })
         .catch(err => {
-            res.status(404).end()
+            res.status(404).end("err")
         })
 })
 
@@ -58,7 +72,6 @@ router.get("/tasks", (req, res) => {
         })
         .then(ts => res.status(200).json(ts))
         .catch(err => {
-            console.log(err)
             res.status(400).json({ error: JSON.stringify(err) })
         })
 })
@@ -181,10 +194,130 @@ router.delete("/staff/:sid/tasks", (req, res) => {
     })
 })
 
+let finishtask = (tk, repo, loac) => {
+    return new Promise((resolve, reject) => {
+        if (tk.material.repository_id == repo && (tk.material.location_id + "") == loac) {
+            task.updateOne({ _id: tk._id }, { status: 2, end_time: Date.now() }, (err, raw) => {
+                if (err) { reject(err) }
+                else {
+                    if (raw.ok == 1) {
+                        let code = 100
+                        if (tk.status == 502) code = 101
+                        upma = {
+                            status: code
+                        }
+                        if (tk.status >= 501 && tk.status < 600) {
+                            upma["repository_id"] = tk.migration.to_repository
+                            upma["location_id"] = tk.migration.to_location
+                            upma["layer"] = tk.migration.to_layer
+                        }
+                        material.updateOne({ _id: tk.material._id }, upma, (err, raw) => {
+                            if (err) { reject(err) }
+                            else {
+                                if (raw.ok == 1) {
+                                    if (tk.status >= 501 && tk.status < 600) {
+                                        let rm = { available_space: 1, stored_count: -1 }
+                                        rm["locations." + tk.migration.from_repository + ".available_space"] = 1
+                                        rm["locations." + tk.migration.from_location + ".materials_num." + tk.migration.from_layer] = -1
+                                        repository.updateOne({ id: repo }, { $inc: rm }, (err, raw) => {
+                                            if (err) reject(err)
+                                            else {
+                                                if (raw.ok == 1) {
+                                                    if (tk.migration) {
+                                                        migration.updateOne({ _id: tk.migration._id }, { date: Date.now() }, (err, raw) => {
+                                                            if (err) reject(err)
+                                                            else {
+                                                                if (raw.ok == 1) {
+                                                                    resolve()
+                                                                } else {
+                                                                    reject("migration")
+                                                                }
+                                                            }
+                                                        })
+                                                    } else {
+                                                        errorinfo.updateOne({ _id: tk.errorinfo._id }, { fixed: true }, (err, raw) => {
+                                                            if (err) reject(err)
+                                                            else {
+                                                                if (raw.ok == 1) {
+                                                                    resolve()
+                                                                } else {
+                                                                    reject("errorinfo")
+                                                                }
+                                                            }
+                                                        })
+                                                    }
+                                                } else {
+                                                    reject("repository")
+                                                }
+                                            }
+                                        })
+                                    } else {
+                                        if (tk.migration) {
+                                            migration.updateOne({ _id: tk.migration._id }, { date: Date.now() }, (err, raw) => {
+                                                if (err) reject(err)
+                                                else {
+                                                    if (raw.ok == 1) {
+                                                        resolve()
+                                                    } else {
+                                                        reject("migration")
+                                                    }
+                                                }
+                                            })
+                                        } else {
+                                            errorinfo.updateOne({ _id: tk.errorinfo._id }, { fixed: true }, (err, raw) => {
+                                                if (err) reject(err)
+                                                else {
+                                                    if (raw.ok == 1) {
+                                                        resolve()
+                                                    } else {
+                                                        reject("errorinfo")
+                                                    }
+                                                }
+                                            })
+                                        }
+                                    }
+
+                                } else {
+                                    reject("未找到material")
+                                }
+                            }
+                        })
+                    } else { reject("未找到task") }
+                }
+            })
+        } else {
+            reject("不在范围内")
+        }
+    })
+}
+
 router.patch("/staff/:sid/tasks", (req, res) => {
     let sid = req.params.sid
     let repository = req.body.repository
     let location = req.body.location
+    if (location) {
+        location = parseInt(location)
+    } else {
+        res.status(400).json({ error: "location数据不合乎规范" })
+        return false
+    }
+    return Promise.resolve()
+        .then(() => {
+            let query = findHelp.findByQuery(task, [{ key: "staff", value: ObjectId(sid) }, { key: "status", value: 1 }])
+            query = findHelp.slicePage(query, 0, 10)
+            return query
+        })
+        .then(ts => {
+            return Promise.all(ts.map(t => t.combine_migration_or_error()))
+        })
+        .then(ts => {
+            return Promise.all(ts.map(t => finishtask(t, repository, location)))
+        }).then(() => {
+            res.status(200).json({})
+        })
+        .catch(err => {
+            res.status(400).json({ error: JSON.stringify(err) })
+        })
 
 })
 
@@ -221,7 +354,7 @@ router.get("/staff/:sid/tasks", (req, res) => {
     let sid = req.params.sid
     let page = req.query.page ? parseInt(req.query.page) : 0
     let size = req.query.limit ? parseInt(req.query.limit) : 10
-    let others = req.query.others ? req.query.others : []
+    let others = req.query.others ? JSON.parse(req.query.others) : []
 
     return Promise.resolve()
         .then(() => staff.findOne({ _id: ObjectId(sid) }))
@@ -231,7 +364,7 @@ router.get("/staff/:sid/tasks", (req, res) => {
                 key: "staff",
                 value: ObjectId(sid)
             })
-            
+
             return Promise.resolve()
                 .then(() => {
                     let query = findHelp.findByQuery(task, others)
@@ -242,9 +375,9 @@ router.get("/staff/:sid/tasks", (req, res) => {
                     return Promise.all(ts.map(t => t.combine_migration_or_error()))
                 })
                 .then(ts => res.status(200).json(ts.filter(t => t)))
-                .catch(err => res.status(400).json({error: JSON.stringify(err)}))
-            })
-            .catch(() => res.status(404).end())
+                .catch(err => res.status(400).json({ error: JSON.stringify(err) }))
+        })
+        .catch(() => res.status(404).end())
 })
 
 router.get("/migration/:id/task", (req, res) => {
@@ -304,7 +437,9 @@ router.post("/staff/:sid/tasks", (req, res) => {
                         let maid = []
                         let tsobj = []
                         for (let i in ts) {
-                            tsobj.push(ts[i].toObject())
+                            let kk = ts[i].toObject()
+                            kk.status = 1
+                            tsobj.push(kk)
                             taid.push(ts[i]._id)
                             if (ts[i].migration) {
                                 miid.push(ts[i].migration)
@@ -314,7 +449,7 @@ router.post("/staff/:sid/tasks", (req, res) => {
                         }
                         let p = new Promise((resolve, reject) => {
                             // migration.find({_id:{$in:miid}},(err, miobj)=>{})
-                            task.update({ _id: { $in: taid } }, { staff: ObjectId(sid) }, (err, raw) => {
+                            task.update({ _id: { $in: taid } }, { $set: { staff: ObjectId(sid), status: 1 } }, { multi: true }, (err, raw) => {
                                 if (err) {
                                     res.status(400).json({ error: err })
                                 } else {

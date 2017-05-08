@@ -20,7 +20,7 @@ let data = {
         { actual_export_time: Date.now(), material: null, destination: "去该去的地方", from_repository: 1 }
     ],
     material: [
-        { "_id": ObjectId("58fd9393c759b42871a40658"), "__v": 0, "type": "0", "estimated_export_time": ISODate("2017-04-24T05:56:34.590Z"), "repository_id": 1, "location_id": 1, "layer": 1, "last_migration": null, "location_update_time": ISODate("2017-04-24T05:56:34.590Z"), "status": 300, "width": 1, "length": 1, "height": 1, "import_time": ISODate("2017-04-24T05:56:34.590Z"), "description": "A", "id": 1 }
+        // { "_id": ObjectId("58fd9393c759b42871a40658"), "__v": 0, "type": "0", "estimated_export_time": ISODate("2017-04-24T05:56:34.590Z"), "repository_id": 1, "location_id": 1, "layer": 1, "last_migration": null, "location_update_time": ISODate("2017-04-24T05:56:34.590Z"), "status": 300, "width": 1, "length": 1, "height": 1, "import_time": ISODate("2017-04-24T05:56:34.590Z"), "description": "A", "id": 1 }
     ],
     migration: [
         { material: null, date: null, from_repository: 1, from_location: 1, from_layer: 1, to_repository: 2, to_location: 1, to_layer: 1 }
@@ -50,79 +50,87 @@ function log(msg) {
 // data.repository.locations = ls
 // console.log(data.repository.locations)
 
-let promise = new Promise((resolve, reject) => {
-    log(1)
-    repository.deleteMany({}, function (err) {
-        if (err) {
-            log(err)
-        } else {
-            log("delete all repository")
-            repository.insertMany(data.repository, function (err, docs) {
-                if (err) {
-                    log(err)
-                } else {
-                    log("insert repository")
-                    resolve()
-                }
-            })
-        }
-    })
-}).then(() => {
-    return new Promise((resolve, reject) => {
-        log(2)
-        material.deleteMany({}, function (err) {
+let promise = (next) => {
+    new Promise((resolve, reject) => {
+        log(1)
+        repository.deleteMany({}, function (err) {
             if (err) {
                 log(err)
             } else {
-                log("delete all material")
-                material.insertMany(data.material, function (err, docs) {
+                log("delete all repository")
+                repository.insertMany(data.repository, function (err, docs) {
                     if (err) {
                         log(err)
                     } else {
-                        log("insert material")
+                        log("insert repository")
                         resolve()
                     }
                 })
             }
         })
-    })
-}).then(() => {
-    log(3)
-    return new Promise((resolve, reject) => {
-        task.deleteMany({}, (err) => {
+    }).then(() => {
+        return new Promise((resolve, reject) => {
+            log(2)
+            material.deleteMany({}, function (err) {
+                if (err) {
+                    log(err)
+                } else {
+                    log("delete all material")
+                    material.insertMany(data.material, function (err, docs) {
+                        if (err) {
+                            log(err)
+                        } else {
+                            log("insert material")
+                            resolve()
+                        }
+                    })
+                }
+            })
+        })
+    }).then(() => {
+        log(3)
+        return new Promise((resolve, reject) => {
+            task.deleteMany({}, (err) => {
+                if (err) {
+                    reject(err)
+                } else {
+                    migration.deleteMany({}, (err) => {
+                        if (err) {
+                            reject(err)
+                        } else {
+                            exportino.deleteMany({}, (err) => {
+                                if (err) {
+                                    reject(err)
+                                } else {
+                                    resolve()
+                                }
+                            })
+                        }
+                    })
+                }
+            })
+        })
+    }).then(() => {
+        log(4)
+        staff.deleteMany({}, function (err) {
             if (err) {
-                reject(err)
+                log(err)
             } else {
-                migration.deleteMany({}, (err) => {
+                log("delete all staff")
+                staff.insertMany(data.staff, function (err, docs) {
                     if (err) {
-                        reject(err)
+                        log(err)
                     } else {
-                        exportino.deleteMany({}, (err) => {
-                            if (err) {
-                                reject(err)
-                            } else {
-                                resolve()
-                            }
-                        })
+                        next()
+                        log("insert staff")
                     }
                 })
             }
         })
+    }).catch((err) => {
+        console.log(err)
+        next(err)
     })
-}).then(() => {
-    log(4)
-    staff.deleteMany({}, function (err) {
-        if (err) {
-            log(err)
-        } else {
-            log("delete all staff")
-            staff.insertMany(data.staff, function (err, docs) {
-                if (err) {
-                    log(err)
-                } else {
-                    log("insert staff")
-                }
-            })
-        }
-    })
-})
+}
+
+exports.initdatabase = promise

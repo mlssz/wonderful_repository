@@ -119,8 +119,6 @@ taskSchema.methods._combine_error = task => {
     })
 }
 
-
-
 module.exports = mongoose.model("Task", taskSchema)
 
 
