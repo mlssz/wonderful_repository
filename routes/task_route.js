@@ -52,7 +52,7 @@ router.get("/material/id/:id/task", (req, res) => {
     .then(doc => {
       if(doc === null) throw "Not Found Material"
 
-      return migration.findOne({ material: doc._id, date: 0})
+      return migration.findOne({ material: doc._id, date: null})
     })
     .then(doc => {
       if(doc === null) throw "Not Found Migration"
