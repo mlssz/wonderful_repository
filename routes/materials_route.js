@@ -561,7 +561,7 @@ router.get("/materials", (req, res) => {
   var size = parseInt(req.query.limit)
   var query = req.query.others
   if (query == null) {
-    materials.find({}, null, { limit: size, skip: size * page }, (err, docs) => {
+    materials.find({}, null, { limit: size, skip: size * page, sort: {import_time: -1}}, (err, docs) => {
       if (err) {
         res.status(400).json({ error: JSON.stringify(err) })
       } else {

@@ -14,6 +14,7 @@ let utils = require("./utils.js")
 
 let Migration = require("./migration.js")
 let Material = require("./material.js")
+let Exportinfo = require("./exportinfo.js")
 let Errorinfo = require("./errorinfo.js")
 let Staff = require("./staff.js")
 
@@ -76,22 +77,35 @@ taskSchema.methods._combine_migration = task => {
     .then(migration => {
       if (migration === null) throw "Invalid Task: Not Found Migration."
 
-      // find material
-      return Promise.all([
+      let works = [
         migration,
         Material.findOne({_id: migration.material}).exec()
-      ])
+      ]
+
+      // find material
+      return Promise.all(works)
     })
     .then(data => {
       if (data[1] === null) throw "Invalid Task: Not Found Material."
 
       let result = task.toJSON()
-
       delete data[0]["material"]
 
       result["material"] = data[1]
       result["migration"] = data[0]
-      return result
+
+      if (data[0].to_repository !== -1) {
+        return result
+      }
+
+      return Exportinfo.findOne({material: data[1]._id})
+        .then(data => {
+          if(data === null) throw "Invalid Task: Not Found Exportinfo"
+
+          result["destination"] = data.destination
+
+          return result
+        })
     })
 }
 taskSchema.methods._combine_error = task => {

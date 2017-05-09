@@ -90,7 +90,7 @@ router.get("/tasks", (req, res) => {
     let others = req.query.others ? JSON.parse(req.query.others) : []
     return Promise.resolve()
         .then(() => {
-            let query = findHelp.findByQuery(task, others)
+            let query = findHelp.findByQuery(task, others).sort({publish_time: -1})
             query = findHelp.slicePage(query, page, size)
             return query
         })
