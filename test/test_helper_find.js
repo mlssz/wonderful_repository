@@ -55,6 +55,7 @@ describe("Query", () => {
       let query = [
         {key: "repository_id", value: 1},
         {key: "location_id", value: [3, 4]},
+        {key: "description", value: ["test", "help"]},
         {key: "status", region: [300, 1000]},
         {key: "status", region: [0, 400]},
       ]

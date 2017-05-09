@@ -7,6 +7,9 @@
  * MIT License
  */
 
+function changeStringToRegExp(s) {
+  return typeof s === "string" || s instanceof String ? RegExp(`^${s}.*`, 'ig') : s
+}
 
 /**
  * findByQuery find special data from db according url query(other)
@@ -37,7 +40,8 @@ const findByQuery = (model, query) => {
     }
 
     if (i.value) {
-      let elem = i.value instanceof Array ? { "$in": i.value } : i.value
+      let elem = i.value instanceof Array ? { "$in": i.value.map(changeStringToRegExp) }
+          : changeStringToRegExp(i.value)
       and.push({ [i.key]: elem })
     }
     if (i.region && i.region.length >= 2) {
