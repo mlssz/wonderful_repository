@@ -37,12 +37,39 @@ router.get("/task/:id", (req, res, next) => {
                         res.json(r)
                     })
             } else {
-                res.status(404).end("null")
+                res.status(404).end()
             }
         })
         .catch(err => {
-            res.status(404).end("err")
+            res.status(404).end()
         })
+})
+
+router.get("/material/id/:id/task", (req, res) => {
+  var id = Number.parseInt(req.params.id)
+
+  return material.findOne({id: id})
+    .then(doc => {
+      if(doc === null) throw "Not Found Material"
+
+      return migration.findOne({ material: doc._id, date: 0})
+    })
+    .then(doc => {
+      if(doc === null) throw "Not Found Migration"
+
+      return task.findOne({ migration: doc.id})
+    })
+    .then(doc => {
+      if (doc === null) throw "Not Found Task"
+
+      return doc.combine_migration_or_error(true)
+        .then(r => {
+          res.json(r)
+        })
+    })
+    .catch(err => {
+      res.status(404).end(err)
+    })
 })
 
 router.head("/tasks", (req, res) => {
