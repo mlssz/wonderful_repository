@@ -213,6 +213,7 @@ let finishtask = (tk, repo, loac) => {
                             upma["layer"] = tk.migration.to_layer
                             upma["last_migration"] = tk.migration._id
                         }
+                        console.log(upma)
                         material.updateOne({ _id: tk.material._id }, upma, (err, raw) => {
                             if (err) { reject(err) }
                             else {
