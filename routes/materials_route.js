@@ -186,14 +186,19 @@ router.delete("/material/:id/migration/:mid", (req, res, next) => {
           let lid = doc_migration.to_location - 1
           let yid = doc_migration.to_layer
 
-          return repo.update({
-            $inc: {
-              "available_space": 1,
-              "stored_count": -1,
-              [`locations.${lid}.available_space`]: 1,
-              [`locations.${lid}.materials_num.${yid}`]: -1
-            }
-          })
+          return Promise.all([
+            repo.update({
+              $inc: {
+                "available_space": 1,
+                "stored_count": -1,
+                [`locations.${lid}.available_space`]: 1,
+                [`locations.${lid}.materials_num.${yid}`]: -1
+              }
+            }),
+            doc_material.update({
+              status: 100
+            })
+          ])
         })
         .then(() => res.status(200).json({}))
         .catch((err) => res.status(400).json({ error: JSON.parse(err) }))
@@ -556,7 +561,7 @@ router.get("/materials", (req, res) => {
   var size = parseInt(req.query.limit)
   var query = req.query.others
   if (query == null) {
-    materials.find({}, null, { limit: size, skip: size * page }, (err, docs) => {
+    materials.find({}, null, { limit: size, skip: size * page, sort: {import_time: -1}}, (err, docs) => {
       if (err) {
         res.status(400).json({ error: JSON.stringify(err) })
       } else {

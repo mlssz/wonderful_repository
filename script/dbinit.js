@@ -528,24 +528,27 @@ let promise = (next) => {
       }
     })
   }).then(() => {
-    return new Promise((resolve, reject) => {
-      log(2)
-      material.deleteMany({}, function(err) {
-        if (err) {
-          log(err)
-        } else {
-          log("delete all material")
-          material.insertMany(data.material, function(err, docs) {
-            if (err) {
-              log(err)
-            } else {
-              log("insert material")
-              resolve()
-            }
-          })
-        }
-      })
-    })
+    return Promise.all([
+      new Promise((resolve, reject) => {
+        log(2)
+        material.deleteMany({}, function(err) {
+          if (err) {
+            log(err)
+          } else {
+            log("delete all material")
+            material.insertMany(data.material, function(err, docs) {
+              if (err) {
+                log(err)
+              } else {
+                log("insert material")
+                resolve()
+              }
+            })
+          }
+        })
+      }),
+      errorinfo.deleteMany({})
+    ])
   }).then(() => {
     log(3)
     return new Promise((resolve, reject) => {
