@@ -2,9 +2,76 @@ let express = require("express")
 let router = express.Router()
 exports.router = router
 exports.path = "/"
+let repository = require("../models/repository")
 let findHelp = require("../libs/find_helpers.js")
+let checkHelp = require("../libs/check_helpers.js")
 let errorinfo = require("../models/errorinfo")
 let task = require("../models/task")
+let material = require("../models/material")
+let ObjectId = require("mongoose").Types.ObjectId
+
+/*
+ * req.body = { location_id: {layer: [material.id...]}}
+ */
+router.post("/checkresults/:id", (req, res) => {
+  let checkres = req.body
+  let id = Number.parseInt(req.params.id)
+
+  return Promise.resolve()
+    .then(() => material.find({repository_id: id}))
+    .then(docs => {
+      let errinfos = []
+
+      for(let l_id in checkres){
+        let localtion = checkres[l_id]
+        let localtionDb = docs.filter(d => d.location_id.toString() === l_id)
+
+        for(let l in localtion){
+          let layer = new Set(localtion[l])
+          let layerDb = new Set(localtionDb
+                                .filter(d => d.layer.toString() === l)
+                                .map(d => d._id.toString())
+                               )
+
+          let [errsOfReal, errsOfDb] = checkHelp.diffBetweenTwoSets(layer, layerDb)
+          let errs = Array.from(checkHelp.Union(errsOfReal, errsOfDb))
+          errinfos = errinfos.concat(errs.map(e => ({
+            fixed: false,//修复完成	Boolean	false	是否修复完成
+            error_code: 1, //错误码	Number	1	1位置错误2无法识别
+            create_date: Date.now(), //错误创建时间	Date	now
+            repository: id, //仓库id	Number	required
+            location: l_id,//位置id	Number	required
+            layer: l,//层	Number	required
+            material: ObjectId(e),
+            image: "/sdafasdf",
+          })))
+        }
+      }
+
+      return errorinfo.insertMany(errinfos)
+    })
+    .then(docs => {
+      let tks = docs.map(d => ({
+        action: 601,
+        staff: null,
+        status: 0,
+        migration: null,
+        error: d._id,
+        publish_time: Date.now(),
+        start_time: null,
+        end_time: null,
+        remark: null
+      }))
+
+      return task.insertMany(tks)
+    })
+    .then(tks => {
+      return res.json(tks)
+    })
+    .catch(err => {
+      res.status(400).json({ error: err })
+    })
+})
 
 router.head("/errors", (req, res) => {
     errorinfo.count(null, (err, num) => {
