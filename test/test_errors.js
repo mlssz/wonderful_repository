@@ -47,7 +47,7 @@ let tests = [
     id: 4,
     description: "test4",
     repository_id: 1,
-    location_id: 1,
+    location_id: 4,
     layer: 1,
   },
   {
@@ -55,7 +55,7 @@ let tests = [
     id: 5,
     description: "test5",
     repository_id: 1,
-    location_id: 1,
+    location_id: 4,
     layer: 1,
   },
   {
@@ -63,7 +63,7 @@ let tests = [
     id: 6,
     description: "test6",
     repository_id: 1,
-    location_id: 1,
+    location_id: 4,
     layer: 1,
   }
 ]
@@ -71,7 +71,7 @@ let tests = [
 describe("Check Result", () => {
   describe("#create check result", () => {
     let mids
-    let body = {1: {0: [], 1: []}}
+    let body = {1: [], 4: []}
     before(() => {
       let create_material = Promise.all([
         Material.deleteMany({}).exec(),
@@ -83,11 +83,11 @@ describe("Check Result", () => {
           .then(() => Material.create(tests))
           .then(docs => {
             mids = docs.map(d => d._id)
-            body[1][0].push(mids[0])
-            body[1][0].push(mids[1])
-            body[1][0].push(mids[5])
-            body[1][1].push(mids[3])
-            body[1][1].push(mids[4])
+            body[1].push(mids[0])
+            body[1].push(mids[1])
+            body[1].push(mids[5])
+            body[4].push(mids[3])
+            body[4].push(mids[4])
 
             Repository.create({
               id: 1,

@@ -29,7 +29,113 @@ let data = {
     from_repository: 1
   }],
   material: [
-    // { "_id": ObjectId("58fd9393c759b42871a40658"), "__v": 0, "type": "0", "estimated_export_time": ISODate("2017-04-24T05:56:34.590Z"), "repository_id": 1, "location_id": 1, "layer": 1, "last_migration": null, "location_update_time": ISODate("2017-04-24T05:56:34.590Z"), "status": 300, "width": 1, "length": 1, "height": 1, "import_time": ISODate("2017-04-24T05:56:34.590Z"), "description": "A", "id": 1 }
+    /* 1 */
+    {
+      "_id": ObjectId("59bbba7fb63145782d4747c5"),
+      "type": "Test2",
+      "repository_id": 1,
+      "location_id": 1,
+      "layer": 0,
+      "location_update_time": ISODate("2017-09-15T11:33:19.685Z"),
+      "status": 300,
+      "width": 1,
+      "length": 2,
+      "height": 1,
+      "import_time": ISODate("2017-09-15T11:33:19.685Z"),
+      "description": "test2",
+      "id": 2,
+      "__v": 0
+    },
+
+    /* 2 */
+    {
+      "_id": ObjectId("59bbba7fb63145782d4747c4"),
+      "type": "Test1",
+      "repository_id": 1,
+      "location_id": 1,
+      "layer": 0,
+      "location_update_time": ISODate("2017-09-15T11:33:19.682Z"),
+      "status": 300,
+      "width": 1,
+      "length": 2,
+      "height": 1,
+      "import_time": ISODate("2017-09-15T11:33:19.681Z"),
+      "description": "test1",
+      "id": 1,
+      "__v": 0
+    },
+
+    /* 3 */
+    {
+      "_id": ObjectId("59bbba7fb63145782d4747c7"),
+      "type": "Test4",
+      "repository_id": 1,
+      "location_id": 4,
+      "layer": 1,
+      "location_update_time": ISODate("2017-09-15T11:33:19.686Z"),
+      "status": 300,
+      "width": 1,
+      "length": 2,
+      "height": 1,
+      "import_time": ISODate("2017-09-15T11:33:19.686Z"),
+      "description": "test4",
+      "id": 4,
+      "__v": 0
+    },
+
+    /* 4 */
+    {
+      "_id": ObjectId("59bbba7fb63145782d4747c6"),
+      "type": "Test3",
+      "repository_id": 1,
+      "location_id": 1,
+      "layer": 0,
+      "location_update_time": ISODate("2017-09-15T11:33:19.685Z"),
+      "status": 300,
+      "width": 1,
+      "length": 2,
+      "height": 1,
+      "import_time": ISODate("2017-09-15T11:33:19.685Z"),
+      "description": "test3",
+      "id": 3,
+      "__v": 0
+    },
+
+    /* 5 */
+    {
+      "_id": ObjectId("59bbba7fb63145782d4747c8"),
+      "type": "Test5",
+      "repository_id": 1,
+      "location_id": 4,
+      "layer": 1,
+      "location_update_time": ISODate("2017-09-15T11:33:19.686Z"),
+      "status": 300,
+      "width": 1,
+      "length": 2,
+      "height": 1,
+      "import_time": ISODate("2017-09-15T11:33:19.686Z"),
+      "description": "test5",
+      "id": 5,
+      "__v": 0
+    },
+
+    /* 6 */
+    {
+      "_id": ObjectId("59bbba7fb63145782d4747c9"),
+      "type": "Test6",
+      "repository_id": 1,
+      "location_id": 4,
+      "layer": 1,
+      "location_update_time": ISODate("2017-09-15T11:33:19.686Z"),
+      "status": 300,
+      "width": 1,
+      "length": 2,
+      "height": 1,
+      "import_time": ISODate("2017-09-15T11:33:19.686Z"),
+      "description": "test6",
+      "id": 6,
+      "__v": 0
+    }
   ],
   migration: [{
     material: null,
@@ -49,8 +155,8 @@ let data = {
       "id": 1,
       "place": 1,
       "label": 17,
-      "available_space": 60,
-      "materials_num": [0, 0, 0]
+      "available_space": 54,
+      "materials_num": [3, 0, 0]
     }, {
       "id": 2,
       "place": 1,
@@ -67,8 +173,8 @@ let data = {
       "id": 4,
       "place": 1,
       "label": 20,
-      "available_space": 60,
-      "materials_num": [0, 0, 0]
+      "available_space": 54,
+      "materials_num": [3, 0, 0]
     }, {
       "id": 5,
       "place": 1,
@@ -583,7 +689,7 @@ let promise = (next) => {
           if (err) {
             log(err)
           } else {
-            next()
+            next && next()
             log("insert staff")
           }
         })
@@ -591,7 +697,7 @@ let promise = (next) => {
     })
   }).catch((err) => {
     console.log(err)
-    next(err)
+    next && next(err)
   })
 }
 

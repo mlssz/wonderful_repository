@@ -11,7 +11,7 @@ let material = require("../models/material")
 let ObjectId = require("mongoose").Types.ObjectId
 
 /*
- * req.body = { location_id: {layer: [material.id...]}}
+ * req.body = { location_id:  [material.id...]}
  */
 router.post("/checkresults/:id", (req, res) => {
   let checkres = req.body
@@ -23,30 +23,24 @@ router.post("/checkresults/:id", (req, res) => {
       let errinfos = []
 
       for(let l_id in checkres){
-        let localtion = checkres[l_id]
-        let localtionDb = docs.filter(d => d.location_id.toString() === l_id)
+        let localtion = new Set(checkres[l_id])
+        let localtionDb = new Set(docs
+                                  .filter(d => d.location_id.toString() === l_id)
+                                  .map(d => d._id.toString()))
 
-        for(let l in localtion){
-          let layer = new Set(localtion[l])
-          let layerDb = new Set(localtionDb
-                                .filter(d => d.layer.toString() === l)
-                                .map(d => d._id.toString())
-                               )
-
-          let [errsOfReal, errsOfDb] = checkHelp.diffBetweenTwoSets(layer, layerDb)
+          let [errsOfReal, errsOfDb] = checkHelp.diffBetweenTwoSets(localtion, localtionDb)
           let errs = Array.from(checkHelp.Union(errsOfReal, errsOfDb))
           errinfos = errinfos.concat(errs.map(e => ({
             fixed: false,//修复完成	Boolean	false	是否修复完成
             error_code: 1, //错误码	Number	1	1位置错误2无法识别
             create_date: Date.now(), //错误创建时间	Date	now
             repository: id, //仓库id	Number	required
-            location: l_id,//位置id	Number	required
-            layer: l,//层	Number	required
+            location: Number.parseInt(l_id),//位置id	Number	required
+            layer: 0,//层	Number	required
             material: ObjectId(e),
             image: "/sdafasdf",
           })))
         }
-      }
 
       return errorinfo.insertMany(errinfos)
     })
@@ -69,6 +63,7 @@ router.post("/checkresults/:id", (req, res) => {
       return res.json(tks)
     })
     .catch(err => {
+      console.log(err)
       res.status(400).json({ error: err })
     })
 })

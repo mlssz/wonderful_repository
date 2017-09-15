@@ -69,7 +69,9 @@ const diffBetweenTwoSets = (A, B) => {
 
 module.exports = {
   diffBetweenTwoSets,
-  Union
+  Union,
+  Intersection,
+  Difference
 }
 
 //Examples
