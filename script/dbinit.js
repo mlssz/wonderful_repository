@@ -32,7 +32,7 @@ let data = {
     /* 1 */
     {
       "_id": ObjectId("59bbba7fb63145782d4747c5"),
-      "type": "Test2",
+      "type": "电脑",
       "repository_id": 1,
       "location_id": 1,
       "layer": 0,
@@ -42,15 +42,15 @@ let data = {
       "length": 2,
       "height": 1,
       "import_time": ISODate("2017-09-15T11:33:19.685Z"),
-      "description": "test2",
-      "id": 2,
+      "description": "Mac Pro",
+      "id": 1,
       "__v": 0
     },
 
     /* 2 */
     {
       "_id": ObjectId("59bbba7fb63145782d4747c4"),
-      "type": "Test1",
+      "type": "电脑",
       "repository_id": 1,
       "location_id": 1,
       "layer": 0,
@@ -60,51 +60,51 @@ let data = {
       "length": 2,
       "height": 1,
       "import_time": ISODate("2017-09-15T11:33:19.681Z"),
-      "description": "test1",
-      "id": 1,
+      "description": "Mac Pro",
+      "id": 2,
       "__v": 0
     },
 
     /* 3 */
     {
       "_id": ObjectId("59bbba7fb63145782d4747c7"),
-      "type": "Test4",
+      "type": "移动硬盘",
       "repository_id": 1,
-      "location_id": 4,
-      "layer": 1,
+      "location_id": 1,
+      "layer": 0,
       "location_update_time": ISODate("2017-09-15T11:33:19.686Z"),
       "status": 300,
       "width": 1,
       "length": 2,
       "height": 1,
       "import_time": ISODate("2017-09-15T11:33:19.686Z"),
-      "description": "test4",
-      "id": 4,
+      "description": "LiChi",
+      "id": 3,
       "__v": 0
     },
 
     /* 4 */
     {
       "_id": ObjectId("59bbba7fb63145782d4747c6"),
-      "type": "Test3",
+      "type": "饮品",
       "repository_id": 1,
-      "location_id": 1,
-      "layer": 0,
+      "location_id": 4,
+      "layer": 1,
       "location_update_time": ISODate("2017-09-15T11:33:19.685Z"),
       "status": 300,
       "width": 1,
       "length": 2,
       "height": 1,
       "import_time": ISODate("2017-09-15T11:33:19.685Z"),
-      "description": "test3",
-      "id": 3,
+      "description": "魔爪",
+      "id": 4,
       "__v": 0
     },
 
     /* 5 */
     {
       "_id": ObjectId("59bbba7fb63145782d4747c8"),
-      "type": "Test5",
+      "type": "饮品",
       "repository_id": 1,
       "location_id": 4,
       "layer": 1,
@@ -114,7 +114,7 @@ let data = {
       "length": 2,
       "height": 1,
       "import_time": ISODate("2017-09-15T11:33:19.686Z"),
-      "description": "test5",
+      "description": "魔爪",
       "id": 5,
       "__v": 0
     },
@@ -122,7 +122,7 @@ let data = {
     /* 6 */
     {
       "_id": ObjectId("59bbba7fb63145782d4747c9"),
-      "type": "Test6",
+      "type": "饮品",
       "repository_id": 1,
       "location_id": 4,
       "layer": 1,
@@ -132,7 +132,7 @@ let data = {
       "length": 2,
       "height": 1,
       "import_time": ISODate("2017-09-15T11:33:19.686Z"),
-      "description": "test6",
+      "description": "魔爪",
       "id": 6,
       "__v": 0
     }
