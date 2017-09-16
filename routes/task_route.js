@@ -34,8 +34,8 @@ let errs = [
     {
       "id": ObjectId("59bbba7fb63145782d4747c7"),
       "repository_id": 1,
-      "location_id": 4,
-      "layer": 1,
+      "location_id": 1,
+      "layer": 0,
     },
 
     // /* 4 */
